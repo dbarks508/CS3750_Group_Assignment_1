@@ -11,6 +11,10 @@ app.use(express.json());
 
 const port = process.env.PORT;
 
+app.get("/", (req, res) => {
+  res.send("Stock Simulation Game");
+});
+
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });
