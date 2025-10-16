@@ -20,8 +20,9 @@ export default function(){
 	let [pos, setPos] = useState([50, 50]);
 	let [startPos, setStartPos] = useState(undefined);
 
-	let width = 100;
-	let height = 100;
+	let border = 10;
+	let size = 50;
+	let radius = 250;
 
 	function drag(ev){
 		if(startPos === undefined) return;
@@ -31,7 +32,7 @@ export default function(){
 		let delta = vec_sub(mpos, startPos[0]);
 
 		let epos = vec_add(delta, startPos[1]).map((p, i) => {
-			let limit = wdim[i] - [width, height][i];
+			let limit = wdim[i] - size;
 			if(p < 0) return 0;
 			else if(p > limit) return limit;
 			else return p;
@@ -49,18 +50,19 @@ export default function(){
 	}, [startPos]);
 
 	return (
-		<div style={{height: 500, width: 500, border: "5px solid black"}}>
-			{/* maybe use onDrag in the future? */}
-			<div
+		<div style={{backgroundColor: "red", height: radius * 2, width: radius * 2, borderRadius: radius}}>
+			<div ref={slider}
+				onDrag={ev => ev.preventDefault()}
 				onMouseDown={ev => {
 					let box = ev.target.getBoundingClientRect();
 					setStartPos([[ev.clientX, ev.clientY], [box.left, box.top]]);
 				}}
 				style={{
-					width,
-					height,
+					width: size,
+					height: size,
 					position: "absolute",
 					backgroundColor: "black",
+					borderRadius: size / 2,
 					left: pos[0],
 					top: pos[1],
 				}}
