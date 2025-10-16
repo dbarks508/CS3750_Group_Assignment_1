@@ -27,9 +27,15 @@ export default function(){
 		if(startPos === undefined) return;
 
 		let mpos = [ev.clientX, ev.clientY];
+		let wdim = [window.innerWidth, window.innerHeight];
 		let delta = vec_sub(mpos, startPos[0]);
 
-		let epos = vec_add(delta, startPos[1]);
+		let epos = vec_add(delta, startPos[1]).map((p, i) => {
+			let limit = wdim[i] - [width, height][i];
+			if(p < 0) return 0;
+			else if(p > limit) return limit;
+			else return p;
+		});
 
 		setPos(epos);
 	}
