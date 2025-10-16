@@ -16,12 +16,33 @@ function vec_sub(a, b){
 	return vec_add(a, b.map(x => x * -1));
 }
 
+function get_margin_off(elm){
+	let x = 0;
+	let y = -8;
+	while(elm){
+		let c = getComputedStyle(elm);
+		x += parseInt(c.marginLeft.slice(0, -2));
+		y += parseInt(c.marginTop.slice(0, -2));
+		elm = elm.parentElement;
+	}
+	return [x, y];
+}
+
 function get_center(elm){
 	let box = elm.getBoundingClientRect();
-	return [
+	let out = [
 		(box.right - box.left) / 2,
 		(box.bottom - box.top) / 2,
 	];
+	out = vec_add(out, get_margin_off(elm));
+	return out;
+}
+
+function get_pos(elm){
+	let box = elm.getBoundingClientRect();
+	let out = [box.left, box.top];
+	return out;
+	return vec_add(out, get_margin_off(elm));
 }
 
 export default function(){
@@ -29,9 +50,8 @@ export default function(){
 	let [startPos, setStartPos] = useState(undefined);
 	let slider = useRef(null);
 
-	let border = 10;
-	let size = 50;
-	let radius = 250;
+	let size = 10;
+	let radius = 100;
 
 	function drag(ev){
 		if(startPos === undefined) return;
@@ -60,7 +80,7 @@ export default function(){
 
 	useEffect(() => {
 		document.addEventListener("mouseup", () => setStartPos(undefined));
-		setAng(Math.PI);
+		setAng(0);
 	}, []);
 	useEffect(() => {
 		document.addEventListener("mousemove", drag);
@@ -73,10 +93,9 @@ export default function(){
 				onDrag={ev => ev.preventDefault()}
 				onMouseDown={ev => {
 					let s = slider.current;
-					let box = s.getBoundingClientRect();
 					setStartPos([
 						[ev.clientX, ev.clientY],
-						[box.left, box.top],
+						vec_add(get_pos(s), [size / 2, size / 2]),
 					]);
 				}}
 				style={{
