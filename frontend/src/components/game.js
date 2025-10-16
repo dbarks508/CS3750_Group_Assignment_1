@@ -8,15 +8,17 @@ function Game() {
     e.preventDefault();
 
     try {
-      const responce = await fetch("http://localhost:5000/stock", {
+      const response = await fetch("http://localhost:5000/stock", {
         method: "post",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ticker: ticker_symbol }),
       });
-      const data = await responce.json();
+      const data = await response.json();
       console.log(data);
 
       // TODO - process fetched data
+      //results.o ->  opening price
+      // results.c -> closing price
     } catch (error) {
       console.log("Error fetching ticker from API: " + error);
     }
