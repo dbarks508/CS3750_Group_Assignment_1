@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, useRef} from "react";
 
 function zip(...arr){
 	let len = Math.min(...arr.map(a => a.length));
@@ -16,9 +16,18 @@ function vec_sub(a, b){
 	return vec_add(a, b.map(x => x * -1));
 }
 
+function get_center(elm){
+	let box = elm.getBoundingClientRect();
+	return [
+		(box.right - box.left) / 2,
+		(box.bottom - box.top) / 2,
+	];
+}
+
 export default function(){
-	let [pos, setPos] = useState([50, 50]);
+	let [pos, setPos] = useState([undefined, undefined]);
 	let [startPos, setStartPos] = useState(undefined);
+	let slider = useRef(null);
 
 	let border = 10;
 	let size = 50;
@@ -28,21 +37,30 @@ export default function(){
 		if(startPos === undefined) return;
 
 		let mpos = [ev.clientX, ev.clientY];
-		let wdim = [window.innerWidth, window.innerHeight];
 		let delta = vec_sub(mpos, startPos[0]);
 
-		let epos = vec_add(delta, startPos[1]).map((p, i) => {
-			let limit = wdim[i] - size;
-			if(p < 0) return 0;
-			else if(p > limit) return limit;
-			else return p;
-		});
+		let center = get_center(slider.current.parentNode);
+		let target_pos = vec_add(delta, startPos[1]);
 
-		setPos(epos);
+		let relpos = vec_sub(target_pos, center);
+
+		let theta = Math.atan2(relpos[1], relpos[0]);
+
+		setAng(theta);
+	}
+
+	function setAng(theta){
+		let center = get_center(slider.current.parentNode);
+		let pos = [radius * Math.cos(theta), radius * Math.sin(theta)];
+		pos = vec_add(pos, center);
+		pos = vec_sub(pos, [size / 2, size / 2]);
+
+		setPos(pos);
 	}
 
 	useEffect(() => {
 		document.addEventListener("mouseup", () => setStartPos(undefined));
+		setAng(Math.PI);
 	}, []);
 	useEffect(() => {
 		document.addEventListener("mousemove", drag);
@@ -54,8 +72,12 @@ export default function(){
 			<div ref={slider}
 				onDrag={ev => ev.preventDefault()}
 				onMouseDown={ev => {
-					let box = ev.target.getBoundingClientRect();
-					setStartPos([[ev.clientX, ev.clientY], [box.left, box.top]]);
+					let s = slider.current;
+					let box = s.getBoundingClientRect();
+					setStartPos([
+						[ev.clientX, ev.clientY],
+						[box.left, box.top],
+					]);
 				}}
 				style={{
 					width: size,
