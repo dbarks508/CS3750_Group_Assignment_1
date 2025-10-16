@@ -18,12 +18,15 @@ export default function(){
 	useEffect(() => {
 		document.addEventListener("mouseup", () => setStartPos(undefined));
 	}, []);
+	useEffect(() => {
+		document.addEventListener("mousemove", drag);
+		return () => document.removeEventListener("mousemove", drag);
+	}, [startPos]);
 
 	return (
-		<div style={{height: "500px", width: "500px"}}>
+		<div style={{height: 500, width: 500}}>
 			{/* maybe use onDrag in the future? */}
 			<div
-				onMouseMove={drag}
 				onMouseDown={ev => {
 					let box = ev.target.getBoundingClientRect();
 					setStartPos([[ev.clientX, ev.clientY], [box.left, box.top]]);
