@@ -1,27 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 function Game() {
-  const [text, setText] = useState("");
+  const [ticker_symbol, set_ticker_symbol] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("http://localhost:5000/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+  async function on_ticker_submit(e) {
+    console.log("Inside on_ticker_submit. Ticker symbol: " + ticker_symbol);
+    e.preventDefault();
+
+    try {
+      const responce = await fetch("http://localhost:5000/stock", {
+        method: "post",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ticker: ticker_symbol }),
       });
+      const data = await responce.json();
+      console.log(data);
 
-      const res_text = await res.text();
-      setText(res_text);
-    };
-
-    fetchData();
-  }, []);
+      // TODO - process fetched data
+    } catch (error) {
+      console.log("Error fetching ticker from API: " + error);
+    }
+  }
 
   return (
-    <div>
-      <h1>{text}</h1>
+    <div id="container">
+      <form onSubmit={on_ticker_submit}>
+        <label>Enter Ticker Symbol:</label>
+        <input
+          type="text"
+          value={ticker_symbol}
+          onChange={(e) => set_ticker_symbol(e.target.value)}
+        />
+        <button type="submit">View Stock</button>
+      </form>
     </div>
   );
 }
