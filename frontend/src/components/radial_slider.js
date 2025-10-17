@@ -34,6 +34,23 @@ function getDim(elm){
 	return out;
 }
 
+function svgHelper(r, angle){
+	let x = r * Math.cos(angle);
+	let y = r * Math.sin(angle);
+
+	// basically svg magic
+	return `\
+		M ${r},${r} \
+		L ${r * 2},${r} \
+		A \
+			${r},${r} \
+			0 ${+(angle > 0)} 0 \
+			${x + r},${y + r} \
+		L ${r},${r} \
+		Z \
+	`;
+}
+
 function Circle({radius, pos, style, ref}){
 	return (
 		<div ref={ref} style={{
@@ -87,7 +104,7 @@ function Rod({width, height, pos, color, angle}){
 	)
 }
 
-export default function({onChange, startAngle, radius, primaryColor, accentSize, accentColor}){
+export default function({onChange, startAngle, radius, primaryColor, secondaryColor, accentSize, accentColor}){
 	let [angle, setAngle] = useState(startAngle ?? 0);
 	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
@@ -96,6 +113,7 @@ export default function({onChange, startAngle, radius, primaryColor, accentSize,
 	accentSize = accentSize ?? 10;
 	radius = radius ?? 300;
 	primaryColor = primaryColor ?? "cyan";
+	secondaryColor = secondaryColor ?? "purple";
 	accentColor = accentColor ?? "red";
 
 	function mouseToAngle(ev){
@@ -155,6 +173,21 @@ export default function({onChange, startAngle, radius, primaryColor, accentSize,
 				width: radius * 2,
 				borderRadius: radius,
 			}}>
+			<Circle
+				radius={radius}
+				pos={getPos(container?.current)}
+				style={{
+					backgroundColor: secondaryColor,
+					clipPath: `path("${svgHelper(radius, angle)}")`,
+				}}
+			/>
+			<Rod
+				angle={0}
+				width={radius}
+				height={accentSize}
+				pos={getPos(container?.current)}
+				color={accentColor}
+			/>
 			<Rod
 				angle={angle}
 				width={radius}
