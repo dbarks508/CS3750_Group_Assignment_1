@@ -16,6 +16,8 @@ function vecSub(a, b){
 }
 
 function getPos(elm){
+	if(elm == undefined) return undefined;
+
 	let box = elm.getBoundingClientRect();
 	return [
 		(box.right - box.left) / 2 + box.left,
@@ -32,12 +34,64 @@ function getDim(elm){
 	return out;
 }
 
+function Circle({radius, pos, style, ref}){
+	return (
+		<div ref={ref} style={{
+			width: radius * 2,
+			height: radius * 2,
+			borderRadius: radius,
+			position: "absolute",
+			left: (pos?.at(0) ?? radius) - radius,
+			top: (pos?.at(1) ?? radius) - radius,
+
+			...(style ?? {})
+		}}></div>
+	)
+}
+
+function Rod({width, height, pos, color, angle}){
+	let tip = pos;
+	if(tip){
+		tip = vecAdd(tip, [width * Math.cos(angle), width * Math.sin(angle)]);
+	}
+	return (
+		<div>
+			<Circle
+				radius={height / 2}
+				pos={tip}
+				style={{
+					backgroundColor: color,
+				}}
+			/>
+			<div
+				style={{
+					width,
+					height,
+					backgroundColor: color,
+
+					position: "absolute",
+					left: pos?.at(0) ?? 0,
+					top: (pos?.at(1) ?? 0) - height / 2,
+					transformOrigin: "center left",
+					transform: `rotate(${angle}rad)`,
+				}}
+			></div>
+			<Circle
+				radius={height / 2}
+				pos={pos}
+				style={{
+					backgroundColor: color,
+				}}
+			/>
+		</div>
+	)
+}
 
 export default function({onChange, initAngle, knobSize, radius, backgroundColor, knobColor}){
 	let [angle, setAngle] = useState(initAngle ?? 0);
 	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
-	let slider = useRef(null);
+	let container = useRef(null);
 
 	knobSize = knobSize ?? 20;
 	radius = radius ?? 300;
@@ -45,7 +99,7 @@ export default function({onChange, initAngle, knobSize, radius, backgroundColor,
 	knobColor = knobColor ?? "red";
 
 	function mouseToAngle(ev){
-		let center = getPos(slider.current.parentNode);
+		let center = getPos(container.current);
 		let mpos = [ev.clientX, ev.clientY];
 		mpos = vecSub(mpos, center);
 		let theta = Math.atan2(mpos[1], mpos[0]);
@@ -54,10 +108,10 @@ export default function({onChange, initAngle, knobSize, radius, backgroundColor,
 	}
 
 	function applyAngle(theta){
-		let center = getPos(slider.current.parentNode);
+		let center = getPos(container.current);
 		let pos = [radius * Math.cos(theta), radius * Math.sin(theta)];
 		pos = vecAdd(pos, center);
-		pos = vecSub(pos, getDim(slider.current).map(x => x / 2));
+		pos = pos.map(p => p - knobSize / 2);
 
 		if(onChange){
 			// ensure that theta is between 0 and 2 PI
@@ -90,6 +144,7 @@ export default function({onChange, initAngle, knobSize, radius, backgroundColor,
 
 	return (
 		<div
+			ref={container}
 			onMouseDown={ev => {
 				mouseToAngle(ev);
 				setActive(true);
@@ -101,44 +156,13 @@ export default function({onChange, initAngle, knobSize, radius, backgroundColor,
 				borderRadius: radius,
 				clipPath: "",
 			}}>
-			<div ref={slider}
-				style={{
-					backgroundColor: knobColor,
-					width: knobSize,
-					height: knobSize,
-					borderRadius: knobSize / 2,
-
-					position: "absolute",
-					left: pos[0],
-					top: pos[1],
-				}}
-			></div>
-
-			<div
-				style={{
-					backgroundColor: knobColor,
-					width: knobSize,
-					height: knobSize,
-					borderRadius: knobSize / 2,
-
-					position: "absolute",
-					left: (slider?.current?.parentNode != undefined ? getPos(slider.current.parentNode)[0]:0) - knobSize / 2,
-					top: (slider?.current?.parentNode != undefined ? getPos(slider.current.parentNode)[1]:0) - knobSize / 2,
-				}}
-			></div>
-			<div
-				style={{
-					width: radius,
-					height: knobSize,
-					backgroundColor: knobColor,
-
-					position: "relative",
-					left: radius,
-					top: radius - knobSize / 2,
-					transformOrigin: "center left",
-					transform: `rotate(${angle}rad)`,
-				}}
-			></div>
+			<Rod
+				angle={angle}
+				width={radius}
+				height={knobSize}
+				pos={getPos(container?.current)}
+				color={knobColor}
+			/>
 		</div>
 	);
 }
