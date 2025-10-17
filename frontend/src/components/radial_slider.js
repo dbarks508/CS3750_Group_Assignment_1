@@ -87,16 +87,16 @@ function Rod({width, height, pos, color, angle}){
 	)
 }
 
-export default function({onChange, initAngle, knobSize, radius, backgroundColor, knobColor}){
-	let [angle, setAngle] = useState(initAngle ?? 0);
+export default function({onChange, startAngle, radius, primaryColor, accentSize, accentColor}){
+	let [angle, setAngle] = useState(startAngle ?? 0);
 	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
 	let container = useRef(null);
 
-	knobSize = knobSize ?? 20;
+	accentSize = accentSize ?? 10;
 	radius = radius ?? 300;
-	backgroundColor = backgroundColor ?? "cyan";
-	knobColor = knobColor ?? "red";
+	primaryColor = primaryColor ?? "cyan";
+	accentColor = accentColor ?? "red";
 
 	function mouseToAngle(ev){
 		let center = getPos(container.current);
@@ -111,7 +111,7 @@ export default function({onChange, initAngle, knobSize, radius, backgroundColor,
 		let center = getPos(container.current);
 		let pos = [radius * Math.cos(theta), radius * Math.sin(theta)];
 		pos = vecAdd(pos, center);
-		pos = pos.map(p => p - knobSize / 2);
+		pos = pos.map(p => p - accentSize / 2);
 
 		if(onChange){
 			// ensure that theta is between 0 and 2 PI
@@ -150,18 +150,17 @@ export default function({onChange, initAngle, knobSize, radius, backgroundColor,
 				setActive(true);
 			}}
 			style={{
-				backgroundColor,
+				backgroundColor: primaryColor,
 				height: radius * 2,
 				width: radius * 2,
 				borderRadius: radius,
-				clipPath: "",
 			}}>
 			<Rod
 				angle={angle}
 				width={radius}
-				height={knobSize}
+				height={accentSize}
 				pos={getPos(container?.current)}
-				color={knobColor}
+				color={accentColor}
 			/>
 		</div>
 	);
