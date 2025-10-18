@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 
 function Game() {
   const [ticker_symbol, set_ticker_symbol] = useState("");
+  const naviagte = useNavigate();
 
   async function on_ticker_submit(e) {
     console.log("Inside on_ticker_submit. Ticker symbol: " + ticker_symbol);
