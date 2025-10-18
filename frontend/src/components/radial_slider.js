@@ -104,8 +104,8 @@ function Rod({width, height, pos, color, angle}){
 	)
 }
 
-export default function({onChange, startAngle, radius, primaryColor, secondaryColor, accentSize, accentColor}){
-	let [angle, setAngle] = useState(startAngle ?? 0);
+export default function({onChange, value, radius, primaryColor, secondaryColor, accentSize, accentColor}){
+	let [angle, setAngle] = useState((value ?? 0) * -2 * Math.PI);
 	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
 	let container = useRef(null);
@@ -132,13 +132,14 @@ export default function({onChange, startAngle, radius, primaryColor, secondaryCo
 		pos = pos.map(p => p - accentSize / 2);
 
 		if(onChange){
-			// ensure that theta is between 0 and 2 PI
-			// also translate theta into standard unit circle coordinates
-			let t = theta;
-			if(t < 0){
+			// normalize theta to be in between 0 and 1
+			let t = -theta;
+			if(t <= 0){
 				t += Math.ceil(-t / (2 * Math.PI)) * (2 * Math.PI);
 			}
-			onChange(2 * Math.PI - t);
+			t = t / (2 * Math.PI)
+
+			onChange(t);
 		}
 
 		setAngle(theta);
