@@ -3,10 +3,9 @@ import { useNavigate } from "react-router";
 
 function Game() {
   const [ticker_symbol, set_ticker_symbol] = useState("");
-  const naviagte = useNavigate();
+  const navigate = useNavigate();
 
   async function on_ticker_submit(e) {
-    console.log("Inside on_ticker_submit. Ticker symbol: " + ticker_symbol);
     e.preventDefault();
 
     try {
@@ -17,10 +16,7 @@ function Game() {
       });
       const data = await response.json();
       console.log(data);
-
-      // TODO - process fetched data
-      //results.o ->  opening price
-      // results.c -> closing price
+      navigate("/simulation", { state: { stock_data: data } });
     } catch (error) {
       console.log("Error fetching ticker from API: " + error);
     }
