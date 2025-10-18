@@ -20,8 +20,8 @@ function getPos(elm){
 
 	let box = elm.getBoundingClientRect();
 	return [
-		(box.right - box.left) / 2 + box.left,
-		(box.bottom - box.top) / 2 + box.top,
+		(box.right - box.left) / 2 + box.left + window.scrollX,
+		(box.bottom - box.top) / 2 + box.top + window.scrollY,
 	];
 }
 
@@ -118,7 +118,7 @@ export default function({onChange, startAngle, radius, primaryColor, secondaryCo
 
 	function mouseToAngle(ev){
 		let center = getPos(container.current);
-		let mpos = [ev.clientX, ev.clientY];
+		let mpos = [ev.pageX, ev.pageY];
 		mpos = vecSub(mpos, center);
 		let theta = Math.atan2(mpos[1], mpos[0]);
 
@@ -173,6 +173,8 @@ export default function({onChange, startAngle, radius, primaryColor, secondaryCo
 				width: radius * 2,
 				borderRadius: radius,
 			}}>
+
+			{/* TODO: make only one color visible at the edge of the cirlces */}
 			<Circle
 				radius={radius}
 				pos={getPos(container?.current)}
