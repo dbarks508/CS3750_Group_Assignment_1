@@ -6,6 +6,7 @@ function Simulation() {
   const [funds, set_funds] = useState(10000);
   const [shares_owned, set_shares_owned] = useState(0);
   const [sell_amount, set_sell_amount] = useState(0);
+  const [day, set_day] = useState(1);
   const [selected_amount, set_selected_amount] = useState(0);
   const [price, set_price] = useState("");
 
@@ -23,6 +24,13 @@ function Simulation() {
 
   return (
     <div id="container">
+      <div>
+        <ul>
+          <li>Day: {day}</li>
+          <li>Current Funds: {funds}</li>
+          <li>Shares Owned: {shares_owned}</li>
+        </ul>
+      </div>
       {price && <p>Daily Opening Stock Price: ${price}</p>}
 
       <SliderInput
