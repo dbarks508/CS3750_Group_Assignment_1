@@ -14,17 +14,26 @@ const port = process.env.PORT;
 
 // backend route to retrieve initial stock prices
 app.post("/stock", async (req, res) => {
-  // TODO generate random day to retrieve stock data from - market closed on weekends
-  //   const random_month = Math.floor(Math.random() * 9) + 1;
-  //   const month = String(random_month).padStart(2, "0");
-  //   const random_day = Math.floor(Math.random() * 28) + 1;
-  //   const day = String(random_day).padStart(2, "0");
-  //   const random_year = Math.floor(Math.random() * (2025 - 2024 + 1)) + 2024;
-  //   const year = String(random_year);
-  const date_string = `2024-02-07`;
+  let day_num = 0;
+  let date_string = ""; // could make global for easy advancement to next day?
+
+  while (day_num == 0 || day_num == 6) {
+    let random_month = Math.floor(Math.random() * 12) + 1;
+    let month = String(random_month).padStart(2, "0");
+
+    let random_day = Math.floor(Math.random() * 28) + 1;
+    let day = String(random_day).padStart(2, "0");
+
+    let random_year = Math.floor(Math.random() * (2025 - 2024 + 1)) + 2024;
+    let year = String(random_year);
+
+    date_string = `${year}-${month}-${day}`;
+    let date_obj = new Date(date_string);
+    day_num = date_obj.getDay();
+  }
 
   const { ticker } = req.body;
-  console.log(ticker);
+  console.log("ticker symbol: " + ticker + "|| date string: " + date_string);
 
   try {
     const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
