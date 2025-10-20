@@ -13,6 +13,7 @@ function Simulation() {
   const [price, set_price] = useState("");
   const [date_String, set_date_string] = useState("");
   const [ticker, set_ticker] = useState("");
+  const [button, setButton] = useState("")
 
   const location = useLocation();
   const { stock_data, date, ticker_symbol } = location.state;
@@ -82,26 +83,10 @@ function Simulation() {
             // get the input number from an input option, should be linked so any will do
             let amountToSell = 10; // placeholder value
 
-            // get the current price from the API
-            async function getCurrentPrice() {
-                try {
-                    const response = await rest.getStocksTrades(
-                    {
-                        stockTicker: currTicker,
-                        timestamp: currDate
-                    }
-                    );
-                    console.log('Response:', response);
-                    return response.price;
-                } catch (e) {
-                    console.error('An error happened:', e);
-                }
-            }
-
-            let currPrice = getCurrentPrice();
+        
 
             // send request to backend to sell the shares
-            fetch(`http://localhost:5000/sell/:${amountToBuy}`,{
+            fetch(`http://localhost:5000/sell/:${amountToSell}`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
