@@ -3,6 +3,8 @@ import SimButtons from "./simButtons";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import SliderInput from "./sliderInput";
+import TextInput from "./textInput";
+import PieChartInput from "./pieChartInput";
 
 function Simulation() {
   const [funds, set_funds] = useState(10000);
@@ -138,6 +140,24 @@ function Simulation() {
       <div>
         <SimButtons onButtonClick={handleButtonClick} button={button} />
       </div>
+
+      <TextInput
+        max={funds}
+        value={selected_amount}
+        onChange={(v) => set_selected_amount(v)}
+      />
+
+      <PieChartInput
+        primaryColor="green"
+        secondaryColor="blue"
+        accentColor="black"
+        accentSize={3}
+        radius={70}
+
+        max={funds}
+        value={selected_amount}
+        onChange={(v) => set_selected_amount(v)}
+      />
     </div>
   );
 }
