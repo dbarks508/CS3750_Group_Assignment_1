@@ -45,7 +45,7 @@ function Simulation(){
             let currPrice = getCurrentPrice();
 
             // send request to backend to buy the shares
-            fetch(`http://localhost:5000/buy/:${amountToBuy}/:${currPrice}`,{
+            fetch(`http://localhost:5000/buy/:${amountToBuy}`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -79,7 +79,7 @@ function Simulation(){
             let currPrice = getCurrentPrice();
 
             // send request to backend to sell the shares
-            fetch(`http://localhost:5000/sell/:${amountToBuy}/:${currPrice}`,{
+            fetch(`http://localhost:5000/sell/:${amountToBuy}`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -112,7 +112,7 @@ function Simulation(){
 
     return(
         <div>
-            <SimButtons onButtonClikc={handleButtonClick} button={button} />
+            <SimButtons onButtonClick={handleButtonClick} button={button} />
         </div>
     )
 }

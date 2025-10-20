@@ -1,7 +1,7 @@
     // API imports/information
     import { restClient } from '@polygon.io/client-js';
 
-    const apiKey = "YOUR_API_KEY";
+    const apiKey = "YOUR_API_KEY"; // need API key
     const rest = restClient(apiKey, 'https://api.polygon.io');
     
     
@@ -12,11 +12,7 @@
     // The router will be added as a middleware and will take control of requests starting with path /record.
     const recordRoutes = express.Router();
 
-    // This will help us connect to the database
-    const dbo = require("../db/conn");
 
-    // This helps convert the id from string to ObjectId for the _id.
-    const ObjectId = require("mongodb").ObjectId;
 
     // get a random date, at least 6 months into the sim to start at
     let currDate = Math.floor(Math.random() * 180) + 30;
@@ -29,19 +25,6 @@
     let balance = 0;
     let shares = 0;
 
-    // get the value of the ticker at the given day
-    recordRoutes.route("/stock/:ticker/:day").get(async (req, res) => {
-        try{
-            let db_connect = dbo.getDb("simulation");
-
-
-            let myquery = { ticker: req.params.ticker, day: parseInt(req.params.day, 10) };
-            const result = await db_connect.collection("stocks").findOne(myquery); 
-        }
-        catch(err){
-            throw(err);
-        }
-    });
 
     // start a new simulation with the provided ticker
     recordRoutes.route("/start/:ticker").get((req, res) => {
@@ -68,13 +51,15 @@
             currDate += 1;
         }
 
+        
+
         res.json({ ticker: currTicker, day: currDay, date: currDate, balance: balance, shares: shares });
     });
 
     // buy a given amount of shares at the current price, if the number of shares * price is less than balance
-    recordRoutes.route("/buy/:amount/:price").get((req, res) => {
+    recordRoutes.route("/buy/:amount").get((req, res) => {
         const amount = parseInt(req.params.amount, 10);
-        const price = parseFloat(req.params.price);
+        const price = getCurrentPrice();
         const totalCost = amount * price;
         if (totalCost <= balance){
             shares += amount;
@@ -87,9 +72,9 @@
     });
 
     // sell a given amount of shares at the current price, if the number of shares to sell is less than owned
-    recordRoutes.route("/sell/:amount/:price").get((req, res) => {
+    recordRoutes.route("/sell/:amount").get((req, res) => {
         const amount = parseInt(req.params.amount, 10);
-        const price = parseFloat(req.params.price);
+        const price = getCurrentPrice();
         if (amount <= shares){
             shares -= amount;
             balance += amount * price;
@@ -104,6 +89,25 @@
     recordRoutes.route("/quit").get((req, res) => {
         res.json ({ ticker: currTicker, day: currDay, date: currDate, balance: balance, shares: shares });
     })
+
+    // gets the current price from the API
+    async function getCurrentPrice() {
+              try {
+                const response = await rest.getStocksTrades(
+                {
+                    stockTicker: currTicker,
+                    order: "asc",
+                    limit: "10",
+                    sort: "timestamp",
+                    timestampe: currdate,
+                }
+                );
+                console.log('Response:', response);
+                return response.price;
+            } catch (e) {
+            console.error('An error happened:', e);
+  }
+        }
 
 
     module.exports = recordRoutes;
