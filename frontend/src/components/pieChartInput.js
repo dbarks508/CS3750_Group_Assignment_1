@@ -105,7 +105,9 @@ function Rod({width, height, pos, color, angle}){
 }
 
 export default function PieChartInput({onChange, value, radius, primaryColor, secondaryColor, accentSize, accentColor}){
-	let [angle, setAngle] = useState((value ?? 0) * -2 * Math.PI);
+	value = (value ?? 0) * -2 * Math.PI;
+
+	let [angle, setAngle] = useState(value);
 	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
 	let container = useRef(null);
@@ -147,6 +149,9 @@ export default function PieChartInput({onChange, value, radius, primaryColor, se
 	}
 
 	useEffect(() => {
+		setAngle(value);
+	}, [value]);
+useEffect(() => {
 		document.addEventListener("mouseup", () => setActive(false));
 		applyAngle(angle ?? 0);
 	}, []);

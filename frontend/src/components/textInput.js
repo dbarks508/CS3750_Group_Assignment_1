@@ -3,6 +3,10 @@ import {useState} from "react";
 export default function TextInput({value, max, onChange}){
 	let [prev, setPrev] = useState(value?.toString() ?? "");
 
+	useEffect(() => {
+		setPrev(value);
+	}, [value]);
+
 	return (
 		<input
 			type="text"
