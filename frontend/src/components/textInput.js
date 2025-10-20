@@ -1,7 +1,7 @@
 import {useState} from "react";
 
-export default function TextInput({max, onChange}){
-	let [prev, setPrev] = useState("");
+export default function TextInput({value, max, onChange}){
+	let [prev, setPrev] = useState(value?.toString() ?? "");
 
 	return (
 		<input
