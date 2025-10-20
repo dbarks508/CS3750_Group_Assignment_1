@@ -17,7 +17,11 @@ function Game() {
       const data = await response.json();
       console.log(data);
       navigate("/simulation", {
-        state: { stock_data: data.data, date: data.date },
+        state: {
+          stock_data: data.data,
+          date: data.date,
+          ticker: ticker_symbol,
+        },
       });
     } catch (error) {
       console.log("Error fetching ticker from API: " + error);
