@@ -1,4 +1,4 @@
-import SimButtons from './simButtons';
+import SimButtons from "./simButtons";
 
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -13,7 +13,7 @@ function Simulation() {
   const [price, set_price] = useState("");
   const [date_String, set_date_string] = useState("");
   const [ticker, set_ticker] = useState("");
-  const [button, setButton] = useState("")
+  const [button, setButton] = useState("");
 
   const location = useLocation();
   const { stock_data, date, ticker_symbol } = location.state;
@@ -38,87 +38,70 @@ function Simulation() {
   // next day button can send obj {current_date: date_String, ticker: ticker}
   // responce will recieve the new data, the next day
 
-
   // button logic ----------
 
-  
-    const handleButtonClick = (button) => {
-        console.log(`Button ${button} clicked`);
-        setButton(button);
+  async function handleButtonClick(button) {
+    console.log(`Button ${button} clicked`);
+    setButton(button);
 
-        if (button === 'nextDayButton'){
-            console.log("moving to the next day");
-            day += 1; // increment the day
+    if (button === "nextDayButton") {
+      console.log("moving to the next day");
+      day += 1; // increment the day
 
-            // send request to backend to get the next day data
-            fetch('http://localhost:5000/next',{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(),
-            })
+      // send request to backend to get the next day data
+      fetch("http://localhost:5000/next", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(),
+      });
+    } else if (button === "buyButton") {
+      console.log("buying shares");
+      // get the input number from an input option, should be linked so any will do
+      let amountToBuy = selected_amount; // placeholder value
 
+      // send request to backend to buy the shares
+      fetch(`http://localhost:5000/buy/:${amountToBuy}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(),
+      });
 
-        }
-        else if (button === 'buyButton'){
-            console.log("buying shares");
-            // get the input number from an input option, should be linked so any will do
-            let amountToBuy = 10; // placeholder value
+      console.log("get response and do stuff here");
+    } else if (button === "sellButton") {
+      console.log("selling shares");
+      // get the input number from an input option, should be linked so any will do
+      let amountToSell = 10; // placeholder value
 
-
-            // send request to backend to buy the shares
-            fetch(`http://localhost:5000/buy/:${amountToBuy}`,{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(),
-            })
-
-
-        }
-        else if (button === 'sellButton'){
-            console.log("selling shares");
-            // get the input number from an input option, should be linked so any will do
-            let amountToSell = 10; // placeholder value
-
-        
-
-            // send request to backend to sell the shares
-            fetch(`http://localhost:5000/sell/:${amountToSell}`,{
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(),
-            })
-
-        }
-        else if (button === 'quitButton'){
-            // ensure that the day is at least 7
-            if (day > 6){
-                // display stats
-                console.log("game ended");
-                // send request to backend to get final stats
-                fetch('http://localhost:5000/quit',{
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(),
-                })
-
-            }
-            else
-                return;
-        }
-
+      // send request to backend to sell the shares
+      fetch(`http://localhost:5000/sell/:${amountToSell}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(),
+      });
+    } else if (button === "quitButton") {
+      // ensure that the day is at least 7
+      if (day > 6) {
+        // display stats
+        console.log("game ended");
+        // send request to backend to get final stats
+        fetch("http://localhost:5000/quit", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(),
+        });
+      } else return;
     }
+  }
 
   // end button logic ---------
-
-
 
   return (
     <div id="container">
@@ -137,11 +120,10 @@ function Simulation() {
         max={funds}
         label="Select Amount to Buy/Sell: "
       />
-        <div>
-            <SimButtons onButtonClick={handleButtonClick} button={button} />
-        </div>
+      <div>
+        <SimButtons onButtonClick={handleButtonClick} button={button} />
+      </div>
     </div>
-    
   );
 }
 
