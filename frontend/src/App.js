@@ -5,12 +5,14 @@ import { Route, Routes } from "react-router-dom";
 
 // components
 import Game from "./components/game";
+import Simulation from "./components/simulation";
 
 function App() {
   return (
     <div>
       <Routes>
         <Route exact path="/" element={<Game />} />
+        <Route exact path="/simulation" element={<Simulation />} />
       </Routes>
     </div>
   );
