@@ -42,7 +42,7 @@ function Simulation() {
   // button logic ----------
 
   
-    const handleButtonClick = (button) => {
+    async function handleButtonClick(button) {
         console.log(`Button ${button} clicked`);
         setButton(button);
 
@@ -69,7 +69,7 @@ function Simulation() {
 
             // send request to backend to buy the shares
             fetch(`http://localhost:5000/buy/:${amountToBuy}`,{
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -87,7 +87,7 @@ function Simulation() {
 
             // send request to backend to sell the shares
             fetch(`http://localhost:5000/sell/:${amountToSell}`,{
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -102,7 +102,7 @@ function Simulation() {
                 console.log("game ended");
                 // send request to backend to get final stats
                 fetch('http://localhost:5000/quit',{
-                    method: 'GET',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
