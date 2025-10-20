@@ -42,8 +42,14 @@ export default function PostGamePage({start, end, elapsed}){
 	let gain = diff >= 0;
 
 	return (
-		<div>
-			<p>Elapsed period of time: {toTimeElapsedStr(elapsed)}</p>
+		<div style={{fontSize: 32}}>
+			<p>
+				Elapsed period of time: {toTimeElapsedStr(elapsed)}
+				<button style={{fontSize: "inherit", float: "right"}} onClick={() =>{
+					// TODO
+					// window.location.href = "/";
+				}}>Reset Game</button>
+			</p>
 			<p>Starting amount: {toMoneyStr(start ?? 10_000)}</p>
 			<p>Ending amount: {toMoneyStr(end)}</p>
 			<p>{gain ? "Gain":"Loss"}: {gain ? "+":"-"}{toMoneyStr(Math.abs(diff))}</p>
