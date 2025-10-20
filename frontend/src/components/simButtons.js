@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-
 function SimButtons(){
+
+    const [button, setButton] = useState("");
 
     // show the buttons
     return(
