@@ -12,7 +12,6 @@ export default function TextInput({value, max, onChange}){
 			type="text"
 			value={prev}
 			onInput={ev => {
-				// TODO: allow a period for decimal numbers?
 				ev.target.value = ev.target.value.replace(/[^0-9]/g, "");
 			}}
 			onChange={ev => {

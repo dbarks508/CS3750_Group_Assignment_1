@@ -111,8 +111,12 @@ function clampAngle(angle){
 	return angle;
 }
 
-export default function PieChartInput({onChange, value, radius, primaryColor, secondaryColor, accentSize, accentColor}){
-	value = (value ?? 0) * (-2 * Math.PI) + (value > 0 ? 1e-6:0);
+export default function PieChartInput({
+	primaryColor, secondaryColor, accentColor,
+	radius, accentSize,
+	onChange, max, value,
+}){
+	value = (value ?? 0) * -2 * Math.PI / max + (value > 0 ? 1e-6:0);
 
 	let [angle, setAngle] = useState(value);
 	let [pos, setPos] = useState([undefined, undefined]);
@@ -146,7 +150,7 @@ export default function PieChartInput({onChange, value, radius, primaryColor, se
 			if(t <= 0){
 				t += Math.ceil(-t / (2 * Math.PI)) * (2 * Math.PI);
 			}
-			t = t / (2 * Math.PI)
+			t = Math.round(t / (2 * Math.PI) * max);
 
 			onChange(t);
 		}
