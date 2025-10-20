@@ -9,13 +9,16 @@ function Simulation() {
   const [day, set_day] = useState(1);
   const [selected_amount, set_selected_amount] = useState(0);
   const [price, set_price] = useState("");
+  const [date_String, set_date_string] = useState("");
 
   const location = useLocation();
-  const { stock_data } = location.state;
+  const { stock_data, date } = location.state;
 
   useEffect(() => {
     if (stock_data?.results?.length > 0) {
       set_price(stock_data.results[0].o);
+      set_date_string(date);
+      console.log("destructured date string: " + date);
     } else {
       let message = "00.00 (No opening stock price found.)";
       set_price(message);

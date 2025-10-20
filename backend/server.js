@@ -15,8 +15,9 @@ const port = process.env.PORT;
 // backend route to retrieve initial stock prices
 app.post("/stock", async (req, res) => {
   let day_num = 0;
-  let date_string = ""; // could make global for easy advancement to next day?
+  let date_string = ""; // gets passed to the front end for easy access
 
+  // loop until weekday is found
   while (day_num == 0 || day_num == 6) {
     let random_month = Math.floor(Math.random() * 12) + 1;
     let month = String(random_month).padStart(2, "0");
@@ -39,7 +40,11 @@ app.post("/stock", async (req, res) => {
     const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
     const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
     const response = await axios.get(url);
-    res.json(response.data);
+    const response_obj = {
+      data: response.data,
+      date: date_string,
+    };
+    res.json(response_obj);
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: "Error fetching data from Polygon" });
