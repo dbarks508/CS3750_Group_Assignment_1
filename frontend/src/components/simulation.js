@@ -26,26 +26,9 @@ function Simulation(){
             // get the input number from an input option, should be linked so any will do
             let amountToBuy = 10; // placeholder value
 
-            // get the current price from the API
-            async function getCurrentPrice() {
-                try {
-                    const response = await rest.getStocksTrades(
-                    {
-                        stockTicker: currTicker,
-                        timestamp: currDate
-                    }
-                    );
-                    console.log('Response:', response);
-                    return response.price;
-                } catch (e) {
-                    console.error('An error happened:', e);
-                }
-            }
-
-            let currPrice = getCurrentPrice();
 
             // send request to backend to buy the shares
-            fetch(`http://localhost:5000/buy/:${amountToBuy}/:${currPrice}`,{
+            fetch(`http://localhost:5000/buy/:${amountToBuy}`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -79,7 +62,7 @@ function Simulation(){
             let currPrice = getCurrentPrice();
 
             // send request to backend to sell the shares
-            fetch(`http://localhost:5000/sell/:${amountToBuy}/:${currPrice}`,{
+            fetch(`http://localhost:5000/sell/:${amountToBuy}`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -112,7 +95,7 @@ function Simulation(){
 
     return(
         <div>
-            <SimButtons onButtonClikc={handleButtonClick} button={button} />
+            <SimButtons onButtonClick={handleButtonClick} button={button} />
         </div>
     )
 }
