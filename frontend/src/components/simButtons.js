@@ -2,11 +2,6 @@ import { useState } from 'react';
 
 
 function SimButtons(){
-    // track current pressed button
-    const [button, setButton] = useState('');
-    let day = 1; // track the current day
-
-
 
     // show the buttons
     return(
