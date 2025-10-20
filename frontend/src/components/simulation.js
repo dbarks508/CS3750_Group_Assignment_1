@@ -49,7 +49,7 @@ function Simulation() {
 
         if (button === 'nextDayButton'){
             console.log("moving to the next day");
-            day += 1; // increment the day
+            set_day(day + 1); // increment the day
 
             // send request to backend to get the next day data
             fetch('http://localhost:5000/next',{
@@ -69,7 +69,7 @@ function Simulation() {
 
 
             // send request to backend to buy the shares
-            fetch(`http://localhost:5000/buy/:${amountToBuy}`,{
+            fetch(`http://localhost:5000/buy/${amountToBuy}`,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -87,7 +87,7 @@ function Simulation() {
         
 
             // send request to backend to sell the shares
-            fetch(`http://localhost:5000/sell/:${amountToSell}`,{
+            fetch(`http://localhost:5000/sell/${amountToSell}`,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -138,7 +138,7 @@ function Simulation() {
         label="Select Amount to Buy/Sell: "
       />
       <div>
-        <SimButtons onButtonClick={handleButtonClick} button={button} />
+        <SimButtons onButtonClick={handleButtonClick} />
       </div>
 
       <TextInput
