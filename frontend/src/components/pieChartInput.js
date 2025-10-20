@@ -104,7 +104,7 @@ function Rod({width, height, pos, color, angle}){
 	)
 }
 
-export default function({onChange, value, radius, primaryColor, secondaryColor, accentSize, accentColor}){
+export default function PieChartInput({onChange, value, radius, primaryColor, secondaryColor, accentSize, accentColor}){
 	let [angle, setAngle] = useState((value ?? 0) * -2 * Math.PI);
 	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
