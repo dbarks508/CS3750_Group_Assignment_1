@@ -104,8 +104,15 @@ function Rod({width, height, pos, color, angle}){
 	)
 }
 
+function clampAngle(angle){
+	if(angle <= 0){
+		angle += Math.ceil(-angle / (2 * Math.PI)) * (2 * Math.PI);
+	}
+	return angle;
+}
+
 export default function PieChartInput({onChange, value, radius, primaryColor, secondaryColor, accentSize, accentColor}){
-	value = (value ?? 0) * -2 * Math.PI;
+	value = (value ?? 0) * (-2 * Math.PI) + (value > 0 ? 1e-6:0);
 
 	let [angle, setAngle] = useState(value);
 	let [pos, setPos] = useState([undefined, undefined]);
@@ -151,7 +158,8 @@ export default function PieChartInput({onChange, value, radius, primaryColor, se
 	useEffect(() => {
 		setAngle(value);
 	}, [value]);
-useEffect(() => {
+
+	useEffect(() => {
 		document.addEventListener("mouseup", () => setActive(false));
 		applyAngle(angle ?? 0);
 	}, []);
@@ -186,7 +194,7 @@ useEffect(() => {
 				pos={getPos(container?.current)}
 				style={{
 					backgroundColor: secondaryColor,
-					clipPath: `path("${svgHelper(radius, angle)}")`,
+					clipPath: `path("${svgHelper(radius, clampAngle(angle))}")`,
 				}}
 			/>
 			<Rod

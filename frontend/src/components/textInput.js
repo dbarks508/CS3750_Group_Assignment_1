@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 
 export default function TextInput({value, max, onChange}){
 	let [prev, setPrev] = useState(value?.toString() ?? "");
