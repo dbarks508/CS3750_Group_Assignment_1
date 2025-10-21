@@ -6,7 +6,7 @@ function Game() {
   // Declaring tickerSymbol, balance, day
   const [ticker_symbol, set_ticker_symbol] = useState("");
   const [balance, setBalance] = useState(10000);
-  const [day, setDay] = useState(1)
+  const [day, setDay] = useState(1);
 
   const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ function Game() {
         state: {
           stock_data: data.data,
           date: data.date,
-          ticker: ticker_symbol,
+          ticker_symbol: ticker_symbol,
         },
       });
     } catch (error) {
@@ -35,6 +35,7 @@ function Game() {
 
   return (
     // This is the entire HTML balance page that is pulling from balancePage.js
+    // nice! -DB
     <BalancePage
       on_ticker_submit={on_ticker_submit}
       ticker_symbol={ticker_symbol}

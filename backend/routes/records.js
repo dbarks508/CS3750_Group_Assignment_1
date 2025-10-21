@@ -45,22 +45,22 @@ recordRoutes.route("/start/:ticker").get((req, res) => {
 });
 
 // get the next day in the simulation
-recordRoutes.route("/next").get((req, res) => {
-  currDay += 1;
-  currDate += 1;
-  // ensure the currDate is a week day
-  while (currDate % 7 === 0 || currDate % 7 === 6) {
-    currDate += 1;
-  }
+// recordRoutes.route("/next").get((req, res) => {
+//   currDay += 1;
+//   currDate += 1;
+//   // ensure the currDate is a week day
+//   while (currDate % 7 === 0 || currDate % 7 === 6) {
+//     currDate += 1;
+//   }
 
-  res.json({
-    ticker: currTicker,
-    day: currDay,
-    date: currDate,
-    balance: balance,
-    shares: shares,
-  });
-});
+//   res.json({
+//     ticker: currTicker,
+//     day: currDay,
+//     date: currDate,
+//     balance: balance,
+//     shares: shares,
+//   });
+// });
 
 // buy a given amount of shares at the current price, if the number of shares * price is less than balance
 recordRoutes.route("/buy/:amount").get((req, res) => {
