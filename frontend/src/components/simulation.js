@@ -82,9 +82,10 @@ function Simulation() {
       // handle response here
       const data = await response.json();
       console.log("data received in buy button");
-      const { balance, shares } = data;
+      const { message, balance, shares } = data;
       set_funds(balance);
       set_shares_owned(shares);
+      console.log(message);
     } else if (button === "sellButton") {
       console.log("selling shares");
       // get the input number from an input option, should be linked so any will do
