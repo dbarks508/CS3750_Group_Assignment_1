@@ -69,46 +69,25 @@ function Circle({radius, pos, style, ref}){
 }
 
 function Rod({width, height, pos, color, angle}){
-	let tip = pos;
-	if(tip){
-		tip = vecAdd(tip, [width * Math.cos(angle), width * Math.sin(angle)]);
-	}
+	let inner = Math.sqrt(width * width - Math.pow(height / 2, 2));
 	return (
 		<div
 			style={{
-				display: "grid",
 				gridColumnStart: 1,
 				gridRowStart: 1,
 			}}
 		>
-			<Circle
-				radius={height / 2}
-				pos={tip}
-				style={{
-					backgroundColor: color,
-				}}
-			/>
 			<div
 				style={{
 					width,
 					height,
 					backgroundColor: color,
 
-					display: "grid",
-					gridColumnStart: 1,
-					gridRowStart: 1,
-
 					transformOrigin: "center left",
 					transform: `translateX(${(pos?.at(0) ?? 0) - 0 * width / 2}px) translateY(${(pos?.at(1) ?? 0) - height / 2}px) rotate(${angle}rad)`,
+					clipPath: `path("M 0,0 L 0,${height} L ${inner},${height} A ${width},${width} 0 0 0 ${inner},0 Z")`,
 				}}
 			></div>
-			<Circle
-				radius={height / 2}
-				pos={pos}
-				style={{
-					backgroundColor: color,
-				}}
-			/>
 		</div>
 	)
 }
@@ -199,7 +178,6 @@ export default function PieChartInput({
 			style={{
 				height: radius * 2,
 				width: radius * 2,
-				margin: accentSize / 2,
 
 				display: "grid",
 
@@ -221,6 +199,13 @@ export default function PieChartInput({
 				style={{
 					backgroundColor: secondaryColor,
 					clipPath: `path("${svgHelper(radius, clampAngle(angle))}")`,
+				}}
+			/>
+			<Circle
+				radius={accentSize / 2}
+				pos={[radius, radius]}
+				style={{
+					backgroundColor: accentColor,
 				}}
 			/>
 			<Rod
