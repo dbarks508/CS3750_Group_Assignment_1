@@ -57,9 +57,11 @@ function Circle({radius, pos, style, ref}){
 			width: radius * 2,
 			height: radius * 2,
 			borderRadius: radius,
-			position: "absolute",
-			left: (pos?.at(0) ?? radius) - radius,
-			top: (pos?.at(1) ?? radius) - radius,
+
+			gridColumnStart: 1,
+			gridRowStart: 1,
+
+			transform: `translateX(${(pos?.at(0) ?? 0) - radius}px) translateY(${(pos?.at(1) ?? 0) - radius}px)`,
 
 			...(style ?? {})
 		}}></div>
@@ -72,7 +74,13 @@ function Rod({width, height, pos, color, angle}){
 		tip = vecAdd(tip, [width * Math.cos(angle), width * Math.sin(angle)]);
 	}
 	return (
-		<div>
+		<div
+			style={{
+				display: "grid",
+				gridColumnStart: 1,
+				gridRowStart: 1,
+			}}
+		>
 			<Circle
 				radius={height / 2}
 				pos={tip}
@@ -86,11 +94,12 @@ function Rod({width, height, pos, color, angle}){
 					height,
 					backgroundColor: color,
 
-					position: "absolute",
-					left: pos?.at(0) ?? 0,
-					top: (pos?.at(1) ?? 0) - height / 2,
+					display: "grid",
+					gridColumnStart: 1,
+					gridRowStart: 1,
+
 					transformOrigin: "center left",
-					transform: `rotate(${angle}rad)`,
+					transform: `translateX(${(pos?.at(0) ?? 0) - 0 * width / 2}px) translateY(${(pos?.at(1) ?? 0) - height / 2}px) rotate(${angle}rad)`,
 				}}
 			></div>
 			<Circle
@@ -182,20 +191,33 @@ export default function PieChartInput({
 		<div
 			ref={container}
 			onMouseDown={ev => {
+				if(!(ev.buttons & 1)) return;
+
 				mouseToAngle(ev);
 				setActive(true);
 			}}
 			style={{
-				backgroundColor: primaryColor,
 				height: radius * 2,
 				width: radius * 2,
-				borderRadius: radius,
+				margin: accentSize / 2,
+
+				display: "grid",
+
+				userDrag: "none",
+				userSelect: "none",
 			}}>
 
 			{/* TODO: make only one color visible at the edge of the cirlces */}
 			<Circle
 				radius={radius}
-				pos={getPos(container?.current)}
+				pos={[radius, radius]}
+				style={{
+					backgroundColor: primaryColor,
+				}}
+			/>
+			<Circle
+				radius={radius}
+				pos={[radius, radius]}
 				style={{
 					backgroundColor: secondaryColor,
 					clipPath: `path("${svgHelper(radius, clampAngle(angle))}")`,
@@ -205,14 +227,14 @@ export default function PieChartInput({
 				angle={0}
 				width={radius}
 				height={accentSize}
-				pos={getPos(container?.current)}
+				pos={[radius, radius]}
 				color={accentColor}
 			/>
 			<Rod
 				angle={angle}
 				width={radius}
 				height={accentSize}
-				pos={getPos(container?.current)}
+				pos={[radius, radius]}
 				color={accentColor}
 			/>
 		</div>
