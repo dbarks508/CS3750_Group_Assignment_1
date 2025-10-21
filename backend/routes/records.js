@@ -1,13 +1,12 @@
 // API imports/information
-import { restClient } from "@polygon.io/client-js";
+// const { restClient } = require("@polygon.io/client-js");
 
-const apiKey = "YOUR_API_KEY"; // need API key
-const rest = restClient(apiKey, "https://api.polygon.io");
+// const apiKey = "YOUR_API_KEY"; // need API key
+// const rest = restClient(apiKey, "https://api.polygon.io");
 
 const express = require("express");
+const axios = require("axios");
 
-// recordRoutes is an instance of the express router.
-// We use it to define our routes.
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const recordRoutes = express.Router();
 
@@ -44,6 +43,88 @@ recordRoutes.route("/start/:ticker").get((req, res) => {
   });
 });
 
+//----- routes moved from server.js -----
+
+// backend route to retrieve initial stock prices
+recordRoutes.post("/stock", async (req, res) => {
+  let day_num = 0;
+  let date_string = ""; // gets passed to the front end for easy access
+
+  // loop until weekday is found
+  while (day_num == 0 || day_num == 6) {
+    let random_month = Math.floor(Math.random() * 12) + 1;
+    let month = String(random_month).padStart(2, "0");
+
+    let random_day = Math.floor(Math.random() * 28) + 1;
+    let day = String(random_day).padStart(2, "0");
+
+    let random_year = Math.floor(Math.random() * (2025 - 2024 + 1)) + 2024;
+    let year = String(random_year);
+
+    date_string = `${year}-${month}-${day}`;
+    let date_obj = new Date(date_string);
+    day_num = date_obj.getDay();
+  }
+
+  const { ticker } = req.body;
+  console.log("ticker symbol: " + ticker + "|| date string: " + date_string);
+
+  try {
+    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
+    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
+    const response = await axios.get(url);
+    const response_obj = {
+      data: response.data,
+      date: date_string,
+    };
+    res.json(response_obj);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Error fetching data from Polygon" });
+  }
+});
+
+// backend route to get the next day's stock price for ticker
+recordRoutes.post("/next", async (req, res) => {
+  const { current_date, ticker } = req.body;
+  console.log("current date: " + current_date);
+
+  const [y, m, d] = current_date.split("-").map(Number);
+  let date_obj = new Date(y, m - 1, d);
+  date_obj.setDate(date_obj.getDate() + 1);
+  let day_num = date_obj.getDay();
+
+  while (day_num == 0 || day_num == 6) {
+    date_obj.setDate(date_obj.getDate() + 1);
+    day_num = date_obj.getDay();
+  }
+
+  // turn into date string
+  const year = String(date_obj.getFullYear());
+  const month = String(date_obj.getMonth() + 1).padStart(2, "0"); // month 0 indexed
+  const day = String(date_obj.getDate()).padStart(2, "0");
+
+  const date_string = `${year}-${month}-${day}`;
+  console.log("next date: " + date_string);
+
+  try {
+    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
+    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
+    const response = await axios.get(url);
+    const response_obj = {
+      data: response.data,
+      date: date_string,
+    };
+    res.json(response_obj);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Error fetching data from Polygon" });
+  }
+});
+
+//----- end routes moved from server.js -----
+
+// ----- other version kept for reference -----
 // get the next day in the simulation
 // recordRoutes.route("/next").get((req, res) => {
 //   currDay += 1;
