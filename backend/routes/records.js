@@ -125,25 +125,6 @@ recordRoutes.post("/next", async (req, res) => {
 
 //----- end routes moved from server.js -----
 
-// ----- other version kept for reference -----
-// get the next day in the simulation
-// recordRoutes.route("/next").get((req, res) => {
-//   currDay += 1;
-//   currDate += 1;
-//   // ensure the currDate is a week day
-//   while (currDate % 7 === 0 || currDate % 7 === 6) {
-//     currDate += 1;
-//   }
-
-//   res.json({
-//     ticker: currTicker,
-//     day: currDay,
-//     date: currDate,
-//     balance: balance,
-//     shares: shares,
-//   });
-// });
-
 // buy a given amount of shares at the current price, if the number of shares * price is less than balance
 recordRoutes.post("/buy/:amount", async (req, res) => {
   const amount = parseInt(req.params.amount, 10);
@@ -186,27 +167,36 @@ recordRoutes.post("/buy/:amount", async (req, res) => {
 });
 
 // sell a given amount of shares at the current price, if the number of shares to sell is less than owned
-recordRoutes.route("/sell/:amount").get((req, res) => {
+recordRoutes.post("/sell/:amount", async (req, res) => {
   const amount = parseInt(req.params.amount, 10);
-  const price = getCurrentPrice();
+  const { ticker, current_date } = req.body;
+  let price = 0.0;
+
+  // api call
+  try {
+    const date_string = current_date;
+    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
+    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
+    const response = await axios.get(url);
+    price = response.data.results[0].o;
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Error fetching data from Polygon" });
+  }
+
   if (amount <= shares) {
     shares -= amount;
     balance += amount * price;
     res.json({
       success: true,
-      ticker: currTicker,
-      day: currDay,
-      date: currDate,
+      message: "succusfully updated metrics",
       balance: balance,
       shares: shares,
     });
   } else {
     res.json({
       success: false,
-      message: "Insufficient shares",
-      ticker: currTicker,
-      day: currDay,
-      date: currDate,
+      message: "cannot sell more than owned",
       balance: balance,
       shares: shares,
     });
