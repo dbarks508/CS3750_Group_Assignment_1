@@ -65,17 +65,26 @@ function Simulation() {
       console.log("date advaced to to: " + data.date);
     } else if (button === "buyButton") {
       console.log("buying shares");
-      // get the input number from an input option, should be linked so any will do
-      let amountToBuy = 10; // placeholder value
+      let amountToBuy = selected_amount;
 
       // send request to backend to buy the shares
-      fetch(`http://localhost:5000/buy/${amountToBuy}`, {
+      const response = await fetch(`http://localhost:5000/buy/${amountToBuy}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(),
+        body: JSON.stringify({
+          ticker: ticker,
+          current_date: date_String,
+        }),
       });
+
+      // handle response here
+      const data = await response.json();
+      console.log("data received in buy button");
+      const { balance, shares } = data;
+      set_funds(balance);
+      set_shares_owned(shares);
     } else if (button === "sellButton") {
       console.log("selling shares");
       // get the input number from an input option, should be linked so any will do
@@ -122,7 +131,7 @@ function Simulation() {
       <SliderInput
         value={selected_amount}
         onChange={(e) => set_selected_amount(Number(e.target.value))}
-        max={funds}
+        max={funds / price}
         label="Select Amount to Buy/Sell: "
       />
       <div>

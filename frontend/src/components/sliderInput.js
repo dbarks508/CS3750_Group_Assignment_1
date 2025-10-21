@@ -8,12 +8,12 @@ function SliderInput({ value, onChange, max, label = "amount" }) {
         type="range"
         min="0"
         max={max}
-        step="100"
+        step="1"
         value={value}
         onChange={onChange}
       ></input>
 
-      <label>${value}</label>
+      <label>Shares: {value}</label>
     </div>
   );
 }
