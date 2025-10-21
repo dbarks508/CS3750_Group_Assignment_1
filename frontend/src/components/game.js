@@ -6,14 +6,27 @@ function Game() {
   // Declaring tickerSymbol, balance, day
   const [ticker_symbol, set_ticker_symbol] = useState("");
   const [balance, setBalance] = useState(10000);
-  const [day, setDay] = useState(1)
+  const [day, setDay] = useState(1);
 
   const navigate = useNavigate();
 
   async function on_ticker_submit(e) {
     e.preventDefault();
-    // TODO - make sure the inputted ticker is a valid symbol
     try {
+      // Route to test ticker
+      const validateTicker = await fetch("http://localhost:5000/validateTicker", {
+        method: "post",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ticker: ticker_symbol }),
+      });
+      const tickerData = await validateTicker.json();
+      console.log("Ticker validation response: " + JSON.stringify(tickerData));
+      if (!tickerData.valid) {
+        alert("Invalid ticker symbol. Please try again.");
+        return;
+      }
+      // Route to test ticker
+
       const response = await fetch("http://localhost:5000/stock", {
         method: "post",
         headers: { "content-type": "application/json" },
@@ -25,7 +38,7 @@ function Game() {
         state: {
           stock_data: data.data,
           date: data.date,
-          ticker: ticker_symbol,
+          ticker_symbol: ticker_symbol,
         },
       });
     } catch (error) {
@@ -35,6 +48,7 @@ function Game() {
 
   return (
     // This is the entire HTML balance page that is pulling from balancePage.js
+    // nice! -DB
     <BalancePage
       on_ticker_submit={on_ticker_submit}
       ticker_symbol={ticker_symbol}
