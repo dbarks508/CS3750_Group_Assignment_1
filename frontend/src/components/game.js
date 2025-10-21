@@ -12,8 +12,21 @@ function Game() {
 
   async function on_ticker_submit(e) {
     e.preventDefault();
-    // TODO - make sure the inputted ticker is a valid symbol
     try {
+      // Route to test ticker
+      const validateTicker = await fetch("http://localhost:5000/validateTicker", {
+        method: "post",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ticker: ticker_symbol }),
+      });
+      const tickerData = await validateTicker.json();
+      console.log("Ticker validation response: " + JSON.stringify(tickerData));
+      if (!tickerData.valid) {
+        alert("Invalid ticker symbol. Please try again.");
+        return;
+      }
+      // Route to test ticker
+
       const response = await fetch("http://localhost:5000/stock", {
         method: "post",
         headers: { "content-type": "application/json" },
