@@ -9,13 +9,13 @@ import PieChartInput from "./pieChartInput";
 function Simulation() {
   const [funds, set_funds] = useState(10000);
   const [shares_owned, set_shares_owned] = useState(0);
-  const [sell_amount, set_sell_amount] = useState(0);
   const [day, set_day] = useState(1);
   const [selected_amount, set_selected_amount] = useState(0);
   const [price, set_price] = useState("");
   const [date_String, set_date_string] = useState("");
   const [ticker, set_ticker] = useState("");
   const [button, setButton] = useState("");
+  const [action_taken, set_action_taken] = useState(false);
 
   const location = useLocation();
   const { stock_data, date, ticker_symbol } = location.state;
@@ -44,6 +44,11 @@ function Simulation() {
     setButton(button);
 
     if (button === "nextDayButton") {
+      if (!action_taken) {
+        console.log("action must be taken before advancing days");
+        return;
+      }
+
       console.log("moving to the next day");
       set_day(day + 1); // increment the day
 
@@ -63,6 +68,8 @@ function Simulation() {
       set_date_string(data.date);
       console.log("price for next day set to: " + data.data.results[0].o);
       console.log("date advaced to to: " + data.date);
+
+      set_action_taken(false);
     } else if (button === "buyButton") {
       console.log("buying shares");
       let amountToBuy = selected_amount;
@@ -88,6 +95,8 @@ function Simulation() {
         set_shares_owned(shares);
       }
       console.log(message);
+
+      set_action_taken(true);
     } else if (button === "sellButton") {
       console.log("selling shares");
       let amountToSell = selected_amount;
@@ -116,6 +125,8 @@ function Simulation() {
         set_shares_owned(shares);
       }
       console.log(message);
+
+      set_action_taken(true);
     } else if (button === "quitButton") {
       // ensure that the day is at least 7
       if (day > 6) {
