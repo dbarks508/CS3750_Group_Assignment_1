@@ -68,7 +68,8 @@ function Simulation() {
       set_date_string(data.date);
       console.log("price for next day set to: " + data.data.results[0].o);
       console.log("date advaced to to: " + data.date);
-
+      
+      set_day(day + 1); // increment the day
       set_action_taken(false);
     } else if (button === "buyButton") {
       console.log("buying shares");
@@ -96,7 +97,6 @@ function Simulation() {
       }
       console.log(message);
 
-      set_day(day + 1); // increment the day
 
       set_action_taken(true);
     } else if (button === "sellButton") {
