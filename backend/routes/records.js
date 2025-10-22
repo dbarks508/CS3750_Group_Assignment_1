@@ -1,49 +1,13 @@
-// API imports/information
-// const { restClient } = require("@polygon.io/client-js");
-
-// const apiKey = "YOUR_API_KEY"; // need API key
-// const rest = restClient(apiKey, "https://api.polygon.io");
-
 const express = require("express");
 const axios = require("axios");
 
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const recordRoutes = express.Router();
 
-// get a random date, at least 6 months into the sim to start at
-let currDate = Math.floor(Math.random() * 180) + 30;
-
-// track the number of days passed and the ticker
-let currTicker = "";
-let currDay = 0;
-
 // store the balance and amount of shares
 let balance = 0;
 let shares = 0;
-
-// start a new simulation with the provided ticker
-recordRoutes.route("/start/:ticker").get((req, res) => {
-  currTicker = req.params.ticker;
-
-  // ensure the currDate is a week day
-  while (currDate % 7 === 0 || currDate % 7 === 6) {
-    currDate += 1;
-  }
-  // initialzie starting values
-  currDay = 1;
-  balance = 10000.0;
-  shares = 0;
-
-  res.json({
-    ticker: currTicker,
-    day: currDay,
-    date: currDate,
-    balance: balance,
-    shares: shares,
-  });
-});
-
-//----- routes moved from server.js -----
+let price = 0;
 
 // backend route to retrieve initial stock prices
 recordRoutes.post("/stock", async (req, res) => {
@@ -78,6 +42,7 @@ recordRoutes.post("/stock", async (req, res) => {
       data: response.data,
       date: date_string,
     };
+    price = response.data.results[0].o; // price set to resulting opening price from api call
     res.json(response_obj);
   } catch (error) {
     console.error(error.message);
@@ -116,6 +81,7 @@ recordRoutes.post("/next", async (req, res) => {
       data: response.data,
       date: date_string,
     };
+    price = response.data.results[0].o; // price set to resulting opening price from api call
     res.json(response_obj);
   } catch (error) {
     console.error(error.message);
@@ -123,25 +89,11 @@ recordRoutes.post("/next", async (req, res) => {
   }
 });
 
-//----- end routes moved from server.js -----
-
 // buy a given amount of shares at the current price, if the number of shares * price is less than balance
 recordRoutes.post("/buy/:amount", async (req, res) => {
   const amount = parseInt(req.params.amount, 10);
   const { ticker, current_date } = req.body;
-  let price = 0.0;
-
-  // secure api call to get price
-  try {
-    const date_string = current_date;
-    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
-    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
-    const response = await axios.get(url);
-    price = response.data.results[0].o;
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: "Error fetching data from Polygon" });
-  }
+  console.log(`buying stock from ticker ${ticker} on ${current_date}`);
 
   const totalCost = amount * price;
 
@@ -170,19 +122,7 @@ recordRoutes.post("/buy/:amount", async (req, res) => {
 recordRoutes.post("/sell/:amount", async (req, res) => {
   const amount = parseInt(req.params.amount, 10);
   const { ticker, current_date } = req.body;
-  let price = 0.0;
-
-  // api call
-  try {
-    const date_string = current_date;
-    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
-    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
-    const response = await axios.get(url);
-    price = response.data.results[0].o;
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: "Error fetching data from Polygon" });
-  }
+  console.log(`selling stock from ticker ${ticker} on ${current_date}`);
 
   if (amount <= shares) {
     shares -= amount;
@@ -202,34 +142,6 @@ recordRoutes.post("/sell/:amount", async (req, res) => {
     });
   }
 });
-
-// stops the simulation and gets the final results to display on the stat screen
-recordRoutes.route("/quit").get((req, res) => {
-  res.json({
-    ticker: currTicker,
-    day: currDay,
-    date: currDate,
-    balance: balance,
-    shares: shares,
-  });
-});
-
-// gets the current price from the API
-async function getCurrentPrice() {
-  try {
-    const response = await rest.getStocksTrades({
-      stockTicker: currTicker,
-      order: "asc",
-      limit: "10",
-      sort: "timestamp",
-      timestampe: currdate,
-    });
-    console.log("Response:", response);
-    return response.price;
-  } catch (e) {
-    console.error("An error happened:", e);
-  }
-}
 
 recordRoutes.post("/validateTicker", async (req, res) => {
   // Formatting ticker
