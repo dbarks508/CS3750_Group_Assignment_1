@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@polygon.io/client-js": "^8.2.0",
-    "axios": "^1.12.2"
-  }
-}
