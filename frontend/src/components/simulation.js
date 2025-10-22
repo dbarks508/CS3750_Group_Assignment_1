@@ -44,10 +44,10 @@ function Simulation() {
     console.log(`Button ${button} clicked`);
 
     if (button === "nextDayButton") {
-      if (!action_taken) {
-        console.log("action must be taken before advancing days");
-        return;
-      }
+      //if (!action_taken) {
+      //  console.log("action must be taken before advancing days");
+      //  return;
+      //}
 
       console.log("moving to the next day");
 

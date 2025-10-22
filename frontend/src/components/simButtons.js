@@ -18,7 +18,7 @@ function SimButtons( { onButtonClick }){
 
             <button onClick={() => onButtonClick('quitButton')}>Quit</button>
 
-            <button onClick={() => onButtonClick('nextDayButton')}>Next Day</button>
+            <button onClick={() => onButtonClick('nextDayButton')}>Hold/Next Day</button>
 
             </div>
 
