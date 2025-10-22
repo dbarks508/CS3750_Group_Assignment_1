@@ -32,7 +32,7 @@ recordRoutes.post("/stock", async (req, res) => {
   }
 
   const { ticker } = req.body;
-  console.log("ticker symbol: " + ticker + "|| date string: " + date_string);
+  console.log("ticker symbol: " + ticker + " || date string: " + date_string);
 
   console.log("before api call /stock");
   try {
@@ -157,9 +157,7 @@ recordRoutes.post("/validateTicker", async (req, res) => {
 
   // Checking if ticker is blank
   if (!requestedTicker || requestedTicker.trim() === "") {
-    return res
-      .status(400)
-      .json({ valid: false, message: "Ticker symbol is required" });
+    return res.status(400).json({ valid: false, message: "Blank symbol - Ticker symbol is required" });
   }
   // Formatting ticker with upper case and trimming whitespace
   const formattedTicker = requestedTicker.trim().toUpperCase();
@@ -167,23 +165,40 @@ recordRoutes.post("/validateTicker", async (req, res) => {
   try {
     // Making API call to validate ticker
     const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
-    const url = `https://api.polygon.io/v2/aggs/ticker/${formattedTicker}/range/1/day/2024-05-01/2024-06-01?apiKey=${api_key}`;
+    const url = `https://api.polygon.io/v3/reference/tickers/${formattedTicker}?apiKey=${api_key}`;
     const apiResponse = await axios.get(url);
+    // Storing stock details from API response
+    const stockDetails = apiResponse.data.results;
 
-    // Checking if the ticker is valid based on API response:
-    if (apiResponse.data.resultsCount === 0) {
+    // Checking if ticker is valid
+    if (!stockDetails || stockDetails.length === 0) {
       console.log("INVALID ticker symbol: " + formattedTicker);
       return res.json({ valid: false, message: "Invalid ticker symbol" });
     }
     // If we reach here, the ticker is valid
     console.log("VALID ticker symbol: " + formattedTicker);
-    res.json({ valid: true, message: "Valid ticker symbol" });
+
+    const stockName = stockDetails.name;
+    console.log(`-- Stock Details --\n{\nTicker: ${formattedTicker}\nName: ${stockName}\n}`);
+
+    const responseJson = { valid: true, message: "Valid ticker symbol", stock_name: stockName };
+    res.json(responseJson);
   } catch (error) {
+    // Error handling:
     console.log("Error: " + error.message);
     console.error(error.message);
-    // If the ticker is invalid:
-    if (error.response && error.response.status === 404) {
-      return res.json({ valid: false, message: "Invalid ticker symbol" });
+
+    if (error.response) {
+      // 404 - Invalid Ticker
+      if (error.response.status === 404) {
+        console.log("INVALID ticker symbol: " + formattedTicker);
+        return res.json({ valid: false, message: "Invalid ticker symbol" });
+      }
+      // 429 - Rate Limit Exceeded
+      if (error.response.status === 429) {
+        console.log("API rate limit exceeded (429)");
+        return res.status(429).json({ error: "Rate limit exceeded (429). Please try again later." });
+      }
     }
     // API error
     res.status(500).json({ error: "Error fetching data from Polygon" });

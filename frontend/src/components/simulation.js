@@ -17,11 +17,16 @@ function Simulation() {
   const [ticker, set_ticker] = useState("");
   const [action_taken, set_action_taken] = useState(false);
   const [show_stats, set_show_stats] = useState(false);
+  const [stockName, setStockName] = useState("");
 
   const location = useLocation();
-  const { stock_data, date, ticker_symbol } = location.state;
+  const { stock_data, date, ticker_symbol, stock_name } = location.state;
 
   useEffect(() => {
+    // Always set ticker and stock name
+    set_ticker(ticker_symbol);
+    setStockName(stock_name);
+
     if (stock_data?.results?.length > 0) {
       set_price(stock_data.results[0].o);
       set_date_string(date);
@@ -30,13 +35,15 @@ function Simulation() {
         "destructured date string: " +
           date +
           " || destructured ticker: " +
-          ticker_symbol
+          ticker_symbol +
+          " || stock name: " +
+          stock_name
       );
     } else {
       let message = "00.00 (No opening stock price found.)";
       set_price(message);
     }
-  }, [stock_data]);
+  }, [stock_data, date, ticker_symbol, stock_name]);
 
   // button logic ----------
 
@@ -172,6 +179,8 @@ function Simulation() {
       <div>
         <ul>
           <li>Day: {day}</li>
+          <li>Stock Name: {stockName}</li>
+          <li>Ticker: {ticker}</li>
           <li>Current Funds: {funds.toFixed(2)}</li>
           <li>Shares Owned: {shares_owned}</li>
         </ul>

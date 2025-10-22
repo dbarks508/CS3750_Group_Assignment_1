@@ -20,17 +20,24 @@ function Game() {
         body: JSON.stringify({ ticker: ticker_symbol }),
       });
       const tickerData = await validateTicker.json();
+
+      // Ticker
+      const formattedStockName = tickerData.stock_name;
+      const formattedTicker = ticker_symbol.trim().toUpperCase();
+      console.log("Stock name retrieved: " + formattedStockName);
+      console.log(`-- Stock Data from validateTicker --\n{\nStock Name: ${formattedStockName}\nTicker: ${formattedTicker}\nBalance: ${balance}\nDay: ${day}\n}`);
+
       console.log("Ticker validation response: " + JSON.stringify(tickerData));
       if (!tickerData.valid) {
         alert("Invalid ticker symbol. Please try again.");
         return;
       }
-      // Route to test ticker
 
+      // Route to test ticker
       const response = await fetch("http://localhost:5000/stock", {
         method: "post",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ticker: ticker_symbol }),
+        body: JSON.stringify({ ticker: formattedTicker }),
       });
       const data = await response.json();
       console.log(data);
@@ -38,7 +45,8 @@ function Game() {
         state: {
           stock_data: data.data,
           date: data.date,
-          ticker_symbol: ticker_symbol,
+          ticker_symbol: formattedTicker,
+          stock_name: formattedStockName
         },
       });
     } catch (error) {
