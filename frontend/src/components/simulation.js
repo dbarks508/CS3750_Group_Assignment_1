@@ -82,23 +82,40 @@ function Simulation() {
       // handle response here
       const data = await response.json();
       console.log("data received in buy button");
-      const { message, balance, shares } = data;
-      set_funds(balance);
-      set_shares_owned(shares);
+      const { success, message, balance, shares } = data;
+      if (success) {
+        set_funds(balance);
+        set_shares_owned(shares);
+      }
       console.log(message);
     } else if (button === "sellButton") {
       console.log("selling shares");
-      // get the input number from an input option, should be linked so any will do
-      let amountToSell = 10; // placeholder value
+      let amountToSell = selected_amount;
 
-      // send request to backend to sell the shares
-      fetch(`http://localhost:5000/sell/${amountToSell}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(),
-      });
+      // send request to backend to sell shares
+      const response = await fetch(
+        `http://localhost:5000/sell/${amountToSell}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ticker: ticker,
+            current_date: date_String,
+          }),
+        }
+      );
+
+      // handle response here
+      const data = await response.json();
+      console.log("data received in sell button");
+      const { success, message, balance, shares } = data;
+      if (success) {
+        set_funds(balance);
+        set_shares_owned(shares);
+      }
+      console.log(message);
     } else if (button === "quitButton") {
       // ensure that the day is at least 7
       if (day > 6) {
@@ -132,7 +149,7 @@ function Simulation() {
       <SliderInput
         value={selected_amount}
         onChange={(e) => set_selected_amount(Number(e.target.value))}
-        max={funds / price}
+        max={100}
         label="Select Amount to Buy/Sell: "
       />
       <div>
@@ -140,7 +157,7 @@ function Simulation() {
       </div>
 
       <TextInput
-        max={funds}
+        max={100}
         value={selected_amount}
         onChange={(v) => set_selected_amount(v)}
       />
@@ -151,7 +168,7 @@ function Simulation() {
         accentColor="black"
         accentSize={3}
         radius={70}
-        max={funds}
+        max={100}
         value={selected_amount}
         onChange={(v) => set_selected_amount(v)}
       />
