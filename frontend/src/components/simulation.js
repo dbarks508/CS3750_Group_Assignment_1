@@ -63,7 +63,7 @@ function Simulation() {
 
       // handle response
       const data = await response.json();
-      set_day(day + 1); // increment the day
+      
       set_price(data.data.results[0].o); // sets opening price, could also access closing at .c
       set_date_string(data.date);
       console.log("price for next day set to: " + data.data.results[0].o);
@@ -89,12 +89,14 @@ function Simulation() {
       // handle response here
       const data = await response.json();
       console.log("data received in buy button");
-      const { success, message, balance, shares } = data;
+      const { success,message, balance, shares } = data;
       if (success) {
         set_funds(balance);
         set_shares_owned(shares);
       }
       console.log(message);
+
+      set_day(day + 1); // increment the day
 
       set_action_taken(true);
     } else if (button === "sellButton") {
