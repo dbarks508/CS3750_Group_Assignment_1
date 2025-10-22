@@ -1,26 +1,3 @@
-function toTimeElapsedStr(deltaTime){
-	let times = [
-		1_000,
-		60,
-		60,
-		24,
-	];
-
-	let prev = deltaTime;
-	for(let i = 0; i < times.length; i++){
-		prev /= times[i];
-		let out = Math.floor(prev);
-
-		if(i + 1 < times.length){
-			out %= times[i + 1];
-		}
-
-		times[i] = out;
-	}
-
-	return `${times.pop()} days, ${times.pop()} hours`;
-}
-
 function toMoneyStr(num){
 	let out = Math.floor(num).toString().split("").reverse();
 
@@ -37,17 +14,16 @@ function toMoneyStr(num){
 	return out;
 }
 
-export default function PostGamePage({start, end, elapsed}){
+export default function PostGamePage({start, end, day}){
 	let diff = end - start;
 	let gain = diff >= 0;
 
 	return (
 		<div style={{fontSize: 32}}>
 			<p>
-				Elapsed period of time: {toTimeElapsedStr(elapsed)}
+				Elapsed period of time: {day} Days
 				<button style={{fontSize: "inherit", float: "right"}} onClick={() =>{
-					// TODO
-					// window.location.href = "/";
+					window.location.href = "/";
 				}}>Reset Game</button>
 			</p>
 			<p>Starting amount: {toMoneyStr(start ?? 10_000)}</p>

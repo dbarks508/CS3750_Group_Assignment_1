@@ -57,9 +57,11 @@ function Circle({radius, pos, style, ref}){
 			width: radius * 2,
 			height: radius * 2,
 			borderRadius: radius,
-			position: "absolute",
-			left: (pos?.at(0) ?? radius) - radius,
-			top: (pos?.at(1) ?? radius) - radius,
+
+			gridColumnStart: 1,
+			gridRowStart: 1,
+
+			transform: `translateX(${(pos?.at(0) ?? 0) - radius}px) translateY(${(pos?.at(1) ?? 0) - radius}px)`,
 
 			...(style ?? {})
 		}}></div>
@@ -67,39 +69,25 @@ function Circle({radius, pos, style, ref}){
 }
 
 function Rod({width, height, pos, color, angle}){
-	let tip = pos;
-	if(tip){
-		tip = vecAdd(tip, [width * Math.cos(angle), width * Math.sin(angle)]);
-	}
+	let inner = Math.sqrt(width * width - Math.pow(height / 2, 2));
 	return (
-		<div>
-			<Circle
-				radius={height / 2}
-				pos={tip}
-				style={{
-					backgroundColor: color,
-				}}
-			/>
+		<div
+			style={{
+				gridColumnStart: 1,
+				gridRowStart: 1,
+			}}
+		>
 			<div
 				style={{
 					width,
 					height,
 					backgroundColor: color,
 
-					position: "absolute",
-					left: pos?.at(0) ?? 0,
-					top: (pos?.at(1) ?? 0) - height / 2,
 					transformOrigin: "center left",
-					transform: `rotate(${angle}rad)`,
+					transform: `translateX(${(pos?.at(0) ?? 0) - 0 * width / 2}px) translateY(${(pos?.at(1) ?? 0) - height / 2}px) rotate(${angle}rad)`,
+					clipPath: `path("M 0,0 L 0,${height} L ${inner},${height} A ${width},${width} 0 0 0 ${inner},0 Z")`,
 				}}
 			></div>
-			<Circle
-				radius={height / 2}
-				pos={pos}
-				style={{
-					backgroundColor: color,
-				}}
-			/>
 		</div>
 	)
 }
@@ -182,37 +170,56 @@ export default function PieChartInput({
 		<div
 			ref={container}
 			onMouseDown={ev => {
+				if(!(ev.buttons & 1)) return;
+
 				mouseToAngle(ev);
 				setActive(true);
 			}}
 			style={{
-				backgroundColor: primaryColor,
 				height: radius * 2,
 				width: radius * 2,
-				borderRadius: radius,
+
+				display: "grid",
+
+				userDrag: "none",
+				userSelect: "none",
 			}}>
 
 			{/* TODO: make only one color visible at the edge of the cirlces */}
 			<Circle
 				radius={radius}
-				pos={getPos(container?.current)}
+				pos={[radius, radius]}
+				style={{
+					backgroundColor: primaryColor,
+				}}
+			/>
+			<Circle
+				radius={radius}
+				pos={[radius, radius]}
 				style={{
 					backgroundColor: secondaryColor,
 					clipPath: `path("${svgHelper(radius, clampAngle(angle))}")`,
+				}}
+			/>
+			<Circle
+				radius={accentSize / 2}
+				pos={[radius, radius]}
+				style={{
+					backgroundColor: accentColor,
 				}}
 			/>
 			<Rod
 				angle={0}
 				width={radius}
 				height={accentSize}
-				pos={getPos(container?.current)}
+				pos={[radius, radius]}
 				color={accentColor}
 			/>
 			<Rod
 				angle={angle}
 				width={radius}
 				height={accentSize}
-				pos={getPos(container?.current)}
+				pos={[radius, radius]}
 				color={accentColor}
 			/>
 		</div>
