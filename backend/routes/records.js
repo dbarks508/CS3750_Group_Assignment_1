@@ -28,12 +28,13 @@ recordRoutes.post("/stock", async (req, res) => {
 
     date_string = `${year}-${month}-${day}`;
     let date_obj = new Date(date_string);
-    day_num = date_obj.getDay();
+    day_num = date_obj.getUTCDay(); // 0-6
   }
 
   const { ticker } = req.body;
   console.log("ticker symbol: " + ticker + "|| date string: " + date_string);
 
+  console.log("before api call /stock");
   try {
     const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
     const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
@@ -42,8 +43,11 @@ recordRoutes.post("/stock", async (req, res) => {
       data: response.data,
       date: date_string,
     };
-    price = response.data.results[0].o; // price set to resulting opening price from api call
-    res.json(response_obj);
+    console.log("after api call: ", response.data, "url: ", url);
+    if (response.data.resultsCount > 0) {
+      price = response.data.results[0].o; // price set to resulting opening price from api call
+      res.json(response_obj);
+    }
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: "Error fetching data from Polygon" });
@@ -57,22 +61,23 @@ recordRoutes.post("/next", async (req, res) => {
 
   const [y, m, d] = current_date.split("-").map(Number);
   let date_obj = new Date(y, m - 1, d);
-  date_obj.setDate(date_obj.getDate() + 1);
-  let day_num = date_obj.getDay();
+  date_obj.setUTCDate(date_obj.getUTCDate() + 1);
+  let day_num = date_obj.getUTCDay();
 
   while (day_num == 0 || day_num == 6) {
-    date_obj.setDate(date_obj.getDate() + 1);
-    day_num = date_obj.getDay();
+    date_obj.setUTCDate(date_obj.getUTCDate() + 1);
+    day_num = date_obj.getUTCDay();
   }
 
   // turn into date string
-  const year = String(date_obj.getFullYear());
-  const month = String(date_obj.getMonth() + 1).padStart(2, "0"); // month 0 indexed
-  const day = String(date_obj.getDate()).padStart(2, "0");
+  const year = String(date_obj.getUTCFullYear());
+  const month = String(date_obj.getUTCMonth() + 1).padStart(2, "0"); // month 0 indexed
+  const day = String(date_obj.getUTCDate()).padStart(2, "0");
 
   const date_string = `${year}-${month}-${day}`;
   console.log("next date: " + date_string);
 
+  console.log("before api call /next");
   try {
     const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
     const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
@@ -81,8 +86,11 @@ recordRoutes.post("/next", async (req, res) => {
       data: response.data,
       date: date_string,
     };
-    price = response.data.results[0].o; // price set to resulting opening price from api call
-    res.json(response_obj);
+    console.log("after api call: ", response.data, "url: ", url);
+    if (response.data.resultsCount > 0) {
+      price = response.data.results[0].o; // price set to resulting opening price from api call
+      res.json(response_obj);
+    }
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: "Error fetching data from Polygon" });
