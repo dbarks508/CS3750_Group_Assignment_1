@@ -134,7 +134,25 @@ function Simulation() {
       if (day > 6) {
         console.log("game ended");
         set_show_stats(true);
-        // send request to backend to get final stats
+        // send request to backend to sell all shares
+        let amountToSell = shares_owned;
+
+        // send request to backend to sell shares
+        const response = await fetch(
+          `http://localhost:5000/sell/${amountToSell}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ticker: ticker,
+              current_date: date_String,
+            }),
+          }
+        );
+
+        // handle response
       } else return;
     }
   }
