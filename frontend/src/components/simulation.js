@@ -172,7 +172,7 @@ function Simulation() {
       <div>
         <ul>
           <li>Day: {day}</li>
-          <li>Current Funds: {funds}</li>
+          <li>Current Funds: {funds.toFixed(2)}</li>
           <li>Shares Owned: {shares_owned}</li>
         </ul>
       </div>
