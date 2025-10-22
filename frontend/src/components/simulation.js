@@ -152,7 +152,15 @@ function Simulation() {
           }
         );
 
-        // handle response
+        // handle response here
+        const data = await response.json();
+        console.log("data received in sell button");
+        const { success, message, balance, shares } = data;
+        if (success) {
+          set_funds(balance);
+          set_shares_owned(shares);
+        }
+        console.log(message);
       } else return;
     }
   }
