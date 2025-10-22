@@ -15,7 +15,6 @@ function Simulation() {
   const [price, set_price] = useState("");
   const [date_String, set_date_string] = useState("");
   const [ticker, set_ticker] = useState("");
-  const [button, setButton] = useState("");
   const [action_taken, set_action_taken] = useState(false);
   const [show_stats, set_show_stats] = useState(false);
 
@@ -43,7 +42,6 @@ function Simulation() {
 
   async function handleButtonClick(button) {
     console.log(`Button ${button} clicked`);
-    setButton(button);
 
     if (button === "nextDayButton") {
       if (!action_taken) {
@@ -52,7 +50,6 @@ function Simulation() {
       }
 
       console.log("moving to the next day");
-      set_day(day + 1); // increment the day
 
       // query backend to get the next day data
       const response = await fetch("http://localhost:5000/next", {
@@ -66,6 +63,7 @@ function Simulation() {
 
       // handle response
       const data = await response.json();
+      set_day(day + 1); // increment the day
       set_price(data.data.results[0].o); // sets opening price, could also access closing at .c
       set_date_string(data.date);
       console.log("price for next day set to: " + data.data.results[0].o);
@@ -205,9 +203,7 @@ function Simulation() {
         onChange={(v) => set_selected_amount(v)}
       />
 
-      {show_stats && (
-        <PostGamePage start={10000} end={funds} day={day} />
-      )}
+      {show_stats && <PostGamePage start={10000} end={funds} day={day} />}
     </div>
   );
 }
