@@ -263,9 +263,18 @@ recordRoutes.post("/validateTicker", async (req, res) => {
       console.log("INVALID ticker symbol: " + formattedTicker);
       return res.json({ valid: false, message: "Invalid ticker symbol" });
     }
+
+    // Making another API call to get stock name:
+    const url2 = `https://api.polygon.io/v3/reference/tickers/${formattedTicker}?apiKey=${api_key}`;
+    const stockResponse = await axios.get(url2);
+    const stockName = stockResponse.data.results.name || "Unknown Stock";
+
     // If we reach here, the ticker is valid
     console.log("VALID ticker symbol: " + formattedTicker);
-    res.json({ valid: true, message: "Valid ticker symbol" });
+    
+    // Sending response back to frontend
+    const responseJson = { valid: true, message: "Valid ticker symbol", stock_name: stockName };
+    res.json(responseJson);
 
   } catch (error) {
     console.log("Error: " + error.message);
