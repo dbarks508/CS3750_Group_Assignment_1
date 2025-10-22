@@ -206,7 +206,7 @@ function Simulation() {
       />
 
       {show_stats && (
-        <PostGamePage start={10000} end={funds} elapsed={3600000} />
+        <PostGamePage start={10000} end={funds} day={day} />
       )}
     </div>
   );
