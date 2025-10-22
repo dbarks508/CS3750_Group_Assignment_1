@@ -22,11 +22,14 @@ function Simulation() {
   const { stock_data, date, ticker_symbol, stock_name } = location.state;
 
   useEffect(() => {
+    // Always set ticker and stock name
+    set_ticker(ticker_symbol);
+    setStockName(stock_name);
+
+    // Handle stock price data
     if (stock_data?.results?.length > 0) {
       set_price(stock_data.results[0].o);
       set_date_string(date);
-      set_ticker(ticker_symbol);
-      setStockName(stock_name);
       console.log(
         "destructured date string: " +
           date +
