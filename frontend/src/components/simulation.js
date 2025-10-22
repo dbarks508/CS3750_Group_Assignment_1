@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import SliderInput from "./sliderInput";
 import TextInput from "./textInput";
 import PieChartInput from "./pieChartInput";
+import PostGamePage from "./postGamePage";
 
 function Simulation() {
   const [funds, set_funds] = useState(10000);
@@ -16,6 +17,7 @@ function Simulation() {
   const [ticker, set_ticker] = useState("");
   const [button, setButton] = useState("");
   const [action_taken, set_action_taken] = useState(false);
+  const [show_stats, set_show_stats] = useState(false);
 
   const location = useLocation();
   const { stock_data, date, ticker_symbol } = location.state;
@@ -130,16 +132,9 @@ function Simulation() {
     } else if (button === "quitButton") {
       // ensure that the day is at least 7
       if (day > 6) {
-        // display stats
         console.log("game ended");
+        set_show_stats(true);
         // send request to backend to get final stats
-        fetch("http://localhost:5000/quit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(),
-        });
       } else return;
     }
   }
@@ -183,6 +178,10 @@ function Simulation() {
         value={selected_amount}
         onChange={(v) => set_selected_amount(v)}
       />
+
+      {show_stats && (
+        <PostGamePage start={10000} end={funds} elapsed={3600000} />
+      )}
     </div>
   );
 }
