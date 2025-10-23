@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 
 const API_KEY = process.env.API_KEY;
+if(!API_KEY) throw Error("'API_KEY' be must set in 'config.env'");
 
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const recordRoutes = express.Router();
