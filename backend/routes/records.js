@@ -12,6 +12,10 @@ let balance = 0;
 let shares = 0;
 let price = 0;
 
+// NOTE: in reality we would probably need to flush the cache every once in a while, but this should be good enough for now
+// {TICKER: {DATE: PRICE, ...}, ...}
+let cache = new Map();
+
 // api helpers
 async function validateTicker(ticker){
   const url = `https://api.polygon.io/v3/reference/tickers/${ticker}?apiKey=${API_KEY}`;
@@ -19,16 +23,34 @@ async function validateTicker(ticker){
 
   return response;
 }
-async function getPrice(ticker, date){
+async function fetchPrice(ticker, date){
   let start = toDateStr(date);
 
-  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${start}?apiKey=${API_KEY}`;
+  let end = new Date(date);
+  end.setUTCDate(date.getUTCDate() + 14);
+  end = toDateStr(end);
+
+  // NOTE: for testing maybe change start and end to cover the entire time range that we can access
+
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${end}?apiKey=${API_KEY}`;
   const response = await axios.get(url);
 
   const response_obj = {
     price: response?.data?.results?.at(0)?.o,
     date: start,
   };
+
+  // store results in cache
+  let c = cache.get(ticker);
+  if(c === undefined){
+    c = new Map();
+
+    cache.set(ticker, c);
+  }
+
+  response?.data?.results?.forEach(({t, o}) => {
+    c.set(toDateStr(new Date(t)), o);
+  });
 
   return response_obj;
 }
@@ -69,6 +91,16 @@ function nextWeekDay(date){
   }
 
   date.setUTCDate(date.getUTCDate() + inc);
+}
+async function getPrice(ticker, date){
+  let key = toDateStr(date);
+
+  let price = cache.get(ticker)?.get(key);
+  if(price === undefined){
+    return await fetchPrice(ticker, date);
+  }
+
+  return {price, date: key};
 }
 
 // backend route to retrieve initial stock prices
