@@ -1,6 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 
+const API_KEY = process.env.API_KEY;
+
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const recordRoutes = express.Router();
 
@@ -8,6 +10,25 @@ const recordRoutes = express.Router();
 let balance = 0;
 let shares = 0;
 let price = 0;
+
+// api helpers
+async function validateTicker(ticker){
+  const url = `https://api.polygon.io/v3/reference/tickers/${ticker}?apiKey=${API_KEY}`;
+  const response = await axios.get(url);
+
+  return response;
+}
+async function getPrice(ticker, start, end){
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${end ?? start}?apiKey=${API_KEY}`;
+  const response = await axios.get(url);
+
+  const response_obj = {
+    data: response.data,
+    date: start,
+  };
+
+  return response_obj;
+}
 
 // backend route to retrieve initial stock prices
 recordRoutes.post("/stock", async (req, res) => {
@@ -36,20 +57,14 @@ recordRoutes.post("/stock", async (req, res) => {
 
   console.log("before api call /stock");
   try {
-    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
-    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
-    const response = await axios.get(url);
-    const response_obj = {
-      data: response.data,
-      date: date_string,
-    };
-    console.log("after api call: ", response.data, "url: ", url);
+    const response = await getPrice(ticker, date_string);
+
     if (response.data.resultsCount > 0) {
-      price = response.data.results[0].o; // price set to resulting opening price from api call
-      res.json(response_obj);
+      price = response.data.results[0].o; // set price to the resulting opening price from api call
+      res.json(response);
     }
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
     res.status(500).json({ error: "Error fetching data from Polygon" });
   }
 });
@@ -79,20 +94,13 @@ recordRoutes.post("/next", async (req, res) => {
 
   console.log("before api call /next");
   try {
-    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
-    const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${date_string}/${date_string}?apiKey=${api_key}`;
-    const response = await axios.get(url);
-    const response_obj = {
-      data: response.data,
-      date: date_string,
-    };
-    console.log("after api call: ", response.data, "url: ", url);
+    const response = await getPrice(ticker, date_string);
     if (response.data.resultsCount > 0) {
       price = response.data.results[0].o; // price set to resulting opening price from api call
-      res.json(response_obj);
+      res.json(response);
     }
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
     res.status(500).json({ error: "Error fetching data from Polygon" });
   }
 });
@@ -164,11 +172,10 @@ recordRoutes.post("/validateTicker", async (req, res) => {
 
   try {
     // Making API call to validate ticker
-    const api_key = "9X0NEbKjBw3bl3p1eUA1kBkx1jG9SYzf";
-    const url = `https://api.polygon.io/v3/reference/tickers/${formattedTicker}?apiKey=${api_key}`;
-    const apiResponse = await axios.get(url);
+    const response = await validateTicker(formattedTicker);
+
     // Storing stock details from API response
-    const stockDetails = apiResponse.data.results;
+    const stockDetails = response.data.results;
 
     // Checking if ticker is valid
     if (!stockDetails || stockDetails.length === 0) {
@@ -182,11 +189,10 @@ recordRoutes.post("/validateTicker", async (req, res) => {
     console.log(`-- Stock Details --\n{\nTicker: ${formattedTicker}\nName: ${stockName}\n}`);
 
     const responseJson = { valid: true, message: "Valid ticker symbol", stock_name: stockName };
-    res.json(responseJson);
+    res.json(responseJson);
   } catch (error) {
     // Error handling:
-    console.log("Error: " + error.message);
-    console.error(error.message);
+    console.error(error);
 
     if (error.response) {
       // 404 - Invalid Ticker
