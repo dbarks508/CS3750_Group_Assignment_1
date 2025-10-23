@@ -25,20 +25,23 @@ async function validateTicker(ticker){
   return response;
 }
 async function fetchPrice(ticker, date){
+  // NOTE: for testing maybe change start and end to cover the entire time range that we can access
+  const DAY_COUNT = 60;
+
   let start = toDateStr(date);
 
   let end = new Date(date);
-  end.setUTCDate(date.getUTCDate() + 14);
+  end.setUTCDate(date.getUTCDate() + DAY_COUNT);
   end = toDateStr(end);
-
-  // NOTE: for testing maybe change start and end to cover the entire time range that we can access
 
   const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${end}?apiKey=${API_KEY}`;
   const response = await axios.get(url);
 
+  // NOTE: this returns to first result, which may not be the start date!
+  date.setTime(new Date(response?.data?.results?.at(0)?.t ?? 0));
   const response_obj = {
     price: response?.data?.results?.at(0)?.o,
-    date: start,
+    date: toDateStr(date),
   };
 
   // store results in cache
@@ -53,6 +56,17 @@ async function fetchPrice(ticker, date){
     c.set(toDateStr(new Date(t)), o);
   });
 
+  // put in a dummy values for dataless dates so that the cache knows it to be dataless
+  let dateIter = new Date(date);
+  for(let i = 0; i < DAY_COUNT; i++){
+    let key = toDateStr(dateIter);
+    if(!c.get(key)){
+      c.set(key, false);
+    }
+
+    addDate(dateIter, 1);
+  }
+
   return response_obj;
 }
 
@@ -64,9 +78,10 @@ function genDate(){
   let now = new Date();
 
   let end = new Date(0);
-  end.setUTCFullYear(now.getUTCFullYear());
+  end.setUTCFullYear(now.getUTCFullYear() - 1);
   end.setUTCMonth(now.getUTCMonth());
-  end.setUTCDate(now.getUTCDate() - 30);
+  end.setUTCDate(now.getUTCDate());
+
 
   // polygon's free plan allows us to go back up to 2 years (https://polygon.io/pricing)
   let start = new Date(0);
@@ -103,15 +118,51 @@ function nextWeekDay(date){
 
   date.setUTCDate(date.getUTCDate() + inc);
 }
-async function getPrice(ticker, date){
-  let key = toDateStr(date);
+function addDate(date, num){
+  date.setUTCDate(date.getUTCDate() + num);
+}
+async function getPrices(ticker, date, count, strictCount=true){
+  let out = [];
 
-  let price = cache.get(ticker)?.get(key);
-  if(price === undefined){
-    return await fetchPrice(ticker, date);
+  let dateEnd = new Date(date);
+  addDate(dateEnd, count);
+
+  let dateIter = new Date(date);
+  while(count > 0){
+    // get price from cache until either we get data or an uncached date
+    let key;
+    let price;
+    while(true){
+      key = toDateStr(dateIter);
+      price = cache.get(ticker)?.get(key);
+      addDate(dateIter, 1);
+
+      if(price !== false) break;
+    }
+
+    if(price === undefined){
+      // fetchPrice will update date with the latest valid one
+      out.push(await fetchPrice(ticker, dateIter));
+    }else{
+      out.push({price, date: key});
+    }
+
+    if(!strictCount){
+      let last = fromDateStr(out[out.length - 1].date)
+
+      if(last.getTime() > dateEnd.getTime()){
+        out.pop();
+        break;
+      }
+    }
+
+    count--;
   }
 
-  return {price, date: key};
+  return out;
+}
+async function getPrice(ticker, date){
+  return (await getPrices(ticker, date, 1))?.at(0);
 }
 
 // backend route to retrieve initial stock prices
@@ -270,23 +321,10 @@ async function fetchStockHistory(ticker, endDateStr, days = 30) {
   const fromDate = format(startDate, 'yyyy-MM-dd');
   const toDate = format(endDate, 'yyyy-MM-dd');
 
-  // Setting up API URL for the call
-  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker.toUpperCase()}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&limit=${days}&apiKey=${API_KEY}`;
-
   try {
-    // API Call
-    const response = await axios.get(url);
-    const data = response.data;
+    const stockPrices = await getPrices(ticker, startDate, days, strictCount = false);
 
-    if (data.status !== 'OK' || !data.results) {
-      console.error('Polygon API History Error:', data.status, data.error);
-      // Returning a blank array
-      return[];
-    }
-    // Setting stock prices to what we got from the API call
-    const stockPrices = data.results.map(bar => bar.o);
-
-    return stockPrices; // Returns an array
+    return stockPrices.map(({price: p}) => p); // Returns an array
   } catch (error) {
     console.error("Error fetching stock history from Polygon: ", error.message);
     return [];

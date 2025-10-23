@@ -111,7 +111,7 @@ function Simulation() {
 
         // Setting history
         const historyData = await historyResponse.json();
-        const updatedHistory = [...historyData.stockHistory, data.price];
+        const updatedHistory = [...historyData.stockHistory];
         setChartHistory(updatedHistory);
 
       } catch (error) {
