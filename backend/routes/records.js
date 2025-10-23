@@ -19,8 +19,10 @@ async function validateTicker(ticker){
 
   return response;
 }
-async function getPrice(ticker, start, end){
-  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${end ?? start}?apiKey=${API_KEY}`;
+async function getPrice(ticker, date){
+  let start = toDateStr(date);
+
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${start}?apiKey=${API_KEY}`;
   const response = await axios.get(url);
 
   const response_obj = {
@@ -57,20 +59,30 @@ function genDate(){
 function toDateStr(date){
   return `${date.getUTCFullYear()}-${date.getUTCMonth().toString().padStart(2, "0")}-${(date.getUTCDate() + 1).toString().padStart(2,"0")}`
 }
+function nextWeekDay(date){
+  let inc = 1;
+
+  if(date.getUTCDay() === 6){
+    inc += 2;
+  }else if(date.getUTCDay() === 0){
+    inc += 1;
+  }
+
+  date.setUTCDate(date.getUTCDate() + inc);
+}
 
 // backend route to retrieve initial stock prices
 recordRoutes.post("/stock", async (req, res) => {
+  const { ticker } = req.body;
+  console.log("ticker symbol: " + ticker);
+
   balance = 10000.0;
 
   let date = genDate();
-  let date_string = toDateStr(date);
-
-  const { ticker } = req.body;
-  console.log("ticker symbol: " + ticker + " || date string: " + date_string);
 
   console.log("before api call /stock");
   try {
-    const response = await getPrice(ticker, date_string);
+    const response = await getPrice(ticker, date);
 
     if (response.data.resultsCount > 0) {
       price = response.data.results[0].o; // set price to the resulting opening price from api call
@@ -90,24 +102,12 @@ recordRoutes.post("/next", async (req, res) => {
   const [y, m, d] = current_date.split("-").map(Number);
   let date_obj = new Date(y, m - 1, d);
   date_obj.setUTCDate(date_obj.getUTCDate() + 1);
-  let day_num = date_obj.getUTCDay();
 
-  while (day_num == 0 || day_num == 6) {
-    date_obj.setUTCDate(date_obj.getUTCDate() + 1);
-    day_num = date_obj.getUTCDay();
-  }
-
-  // turn into date string
-  const year = String(date_obj.getUTCFullYear());
-  const month = String(date_obj.getUTCMonth() + 1).padStart(2, "0"); // month 0 indexed
-  const day = String(date_obj.getUTCDate()).padStart(2, "0");
-
-  const date_string = `${year}-${month}-${day}`;
-  console.log("next date: " + date_string);
+  nextWeekDay(date_obj);
 
   console.log("before api call /next");
   try {
-    const response = await getPrice(ticker, date_string);
+    const response = await getPrice(ticker, date_obj);
     if (response.data.resultsCount > 0) {
       price = response.data.results[0].o; // price set to resulting opening price from api call
       res.json(response);
