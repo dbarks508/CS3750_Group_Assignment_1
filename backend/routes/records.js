@@ -82,6 +82,16 @@ function genDate(){
 function toDateStr(date){
   return `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, "0")}-${date.getUTCDate().toString().padStart(2,"0")}`
 }
+function fromDateStr(date){
+  const [y, m, d] = date.split("-").map(Number);
+
+  let date_obj = new Date(0);
+  date_obj.setUTCFullYear(y);
+  date_obj.setUTCMonth(m - 1);
+  date_obj.setUTCDate(d);
+
+  return date_obj;
+}
 function nextWeekDay(date){
   let inc = 1;
 
@@ -130,10 +140,7 @@ recordRoutes.post("/next", async (req, res) => {
   const { current_date, ticker } = req.body;
   console.log("current date: " + current_date);
 
-  const [y, m, d] = current_date.split("-").map(Number);
-  let date_obj = new Date(y, m - 1, d);
-  date_obj.setUTCDate(date_obj.getUTCDate() + 1);
-
+  let date_obj = fromDateStr(current_date);
   nextWeekDay(date_obj);
 
   console.log("before api call /next");
