@@ -107,7 +107,6 @@ export default function PieChartInput({
 	value = (value ?? 0) * -2 * Math.PI / max + (value > 0 ? 1e-6:0);
 
 	let [angle, setAngle] = useState(value);
-	let [pos, setPos] = useState([undefined, undefined]);
 	let [active, setActive] = useState(false);
 	let container = useRef(null);
 
@@ -133,7 +132,7 @@ export default function PieChartInput({
 		pos = pos.map(p => p - accentSize / 2);
 
 		if(onChange){
-			// normalize theta to be in between 0 and 1
+			// normalize theta to be in between 0 and max
 			let t = -theta;
 			if(t <= 0){
 				t += Math.ceil(-t / (2 * Math.PI)) * (2 * Math.PI);
@@ -144,7 +143,6 @@ export default function PieChartInput({
 		}
 
 		setAngle(theta);
-		setPos(pos);
 	}
 
 	useEffect(() => {
@@ -185,7 +183,6 @@ export default function PieChartInput({
 				userSelect: "none",
 			}}>
 
-			{/* TODO: make only one color visible at the edge of the cirlces */}
 			<Circle
 				radius={radius}
 				pos={[radius, radius]}
