@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const { format, subDays } = require('date-fns');
 
 const API_KEY = process.env.API_KEY;
 if(!API_KEY) throw Error("'API_KEY' be must set in 'config.env'");
@@ -252,5 +253,56 @@ recordRoutes.post("/validateTicker", async (req, res) => {
     res.status(500).json({ error: "Error fetching data from Polygon" });
   }
 });
+
+// -- Stock History Section --
+// Function
+async function fetchStockHistory(ticker, endDateStr, days = 30) {
+  // Formatting the date frame
+  const endDate = new Date(endDateStr);
+  const startDate = subDays(endDate, days);
+  const fromDate = format(startDate, 'yyyy-MM-dd');
+  const toDate = format(endDate, 'yyyy-MM-dd');
+
+  // Setting up API URL for the call
+  const url = `https://api.polygon.io/v2/aggs/ticker/${ticker.toUpperCase()}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&limit=${days}&apiKey=${API_KEY}`;
+
+  try {
+    // API Call
+    const response = await axios.get(url);
+    const data = response.data;
+
+    if (data.status !== 'OK' || !data.results) {
+      console.error('Polygon API History Error:', data.status, data.error);
+      // Returning a blank array
+      return[];
+    }
+    // Setting stock prices to what we got from the API call
+    const stockPrices = data.results.map(bar => bar.o);
+
+    return stockPrices; // Returns an array
+  } catch (error) {
+    console.error("Error fetching stock history from Polygon: ", error.message);
+    return [];
+  }
+}
+// Route
+recordRoutes.post("/stockHistory", async (req, res) => {
+  const { ticker, simulation_date } = req.body;
+  if (!ticker || !simulation_date) {
+    return res.status(400).json({ error: "Ticker symbol is required." });
+  }
+
+  try {
+    //console.log(`Fetching 30 days of history for: ${ticker}, ending at ${simulation_date}`);
+
+    // Setting stock history data
+    const stockHistory = await fetchStockHistory(ticker, simulation_date, 30);
+    res.json({ stockHistory: stockHistory, current_simulation_date: simulation_date });
+  } catch (error) {
+    console.error("Error in /stockHistory route: ", error);
+    return error;
+  }
+});
+// -- Stock History Section --
 
 module.exports = recordRoutes;

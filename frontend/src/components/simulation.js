@@ -6,6 +6,7 @@ import SliderInput from "./sliderInput";
 import TextInput from "./textInput";
 import PieChartInput from "./pieChartInput";
 import PostGamePage from "./postGamePage";
+import StockLineChart from "./stockLineChart";
 
 function Simulation() {
   const [funds, set_funds] = useState(10000);
@@ -18,14 +19,28 @@ function Simulation() {
   const [action_taken, set_action_taken] = useState(false);
   const [show_stats, set_show_stats] = useState(false);
   const [stockName, setStockName] = useState("");
+  const [chartHistory, setChartHistory] = useState([]);
 
   const location = useLocation();
-  const { rawPrice, date, ticker_symbol, stock_name } = location.state;
+  const { rawPrice, date, ticker_symbol, stock_name, stockHistory } = location.state;
 
   useEffect(() => {
     // Always set ticker and stock name
     set_ticker(ticker_symbol);
     setStockName(stock_name);
+
+    // If there is stock history, set it
+    if (stockHistory && rawPrice) {
+      // Need to get the current price and append it to the end of the array that we have the history for
+      // Getting history
+      const initialHistory = [...stockHistory];
+      // Getting current price
+      const currentPrice = Number(rawPrice);
+      // Putting the last index as our current price
+      initialHistory[initialHistory.length - 1] = currentPrice;
+      // Updating graph
+      setChartHistory(initialHistory);
+    }
 
     if (rawPrice) {
       set_price(rawPrice);
@@ -43,7 +58,7 @@ function Simulation() {
       let message = "00.00 (No opening stock price found.)";
       set_price(message);
     }
-  }, [rawPrice, date, ticker_symbol, stock_name]);
+  }, [rawPrice, date, ticker_symbol, stock_name, stockHistory]);
 
   // button logic ----------
 
@@ -75,6 +90,35 @@ function Simulation() {
       set_date_string(data.date);
       console.log("price for next day set to: " + data.price);
       console.log("date advaced to to: " + data.date);
+
+      // Need to re-fetch stock history due to the date changing
+      try {
+        // Running stock history route
+        const historyResponse = await fetch("http://localhost:5000/stockHistory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticker: ticker,
+            simulation_date: data.date,
+          }),
+        });
+
+        // Checking history
+        if (!historyResponse.ok) {
+          console.log("Failed to fetch updated stock history");
+          return;
+        }
+
+        // Setting history
+        const historyData = await historyResponse.json();
+        const updatedHistory = [...historyData.stockHistory, data.price];
+        setChartHistory(updatedHistory);
+
+      } catch (error) {
+        console.error("Error updating chart history: ", error);
+        setChartHistory([]);
+      }
+
       
       set_day(day + 1); // increment the day
       set_action_taken(false);
@@ -175,46 +219,52 @@ function Simulation() {
   // end button logic ---------
 
   return (
-    <div id="container">
-      <div>
-        <ul>
-          <li>Day: {day}</li>
-          <li>Stock Name: {stockName}</li>
-          <li>Ticker: {ticker}</li>
-          <li>Current Funds: {funds.toFixed(2)}</li>
-          <li>Shares Owned: {shares_owned}</li>
-        </ul>
+    <div id="container" style={{ display: 'flex' }}>
+      <div style={{ width: '100%' }}>
+        <div>
+          <ul>
+            <li>Day: {day}</li>
+            <li>Stock Name: {stockName}</li>
+            <li>Ticker: {ticker}</li>
+            <li>Current Funds: {funds.toFixed(2)}</li>
+            <li>Shares Owned: {shares_owned}</li>
+          </ul>
+        </div>
+        {price && <p>Daily Opening Stock Price: ${price}</p>}
+
+        <SliderInput
+          value={selected_amount}
+          onChange={(e) => set_selected_amount(Number(e.target.value))}
+          max={100}
+          label="Select Amount to Buy/Sell: "
+        />
+        <div>
+          <SimButtons onButtonClick={handleButtonClick} />
+        </div>
+
+        <TextInput
+          max={100}
+          value={selected_amount}
+          onChange={(v) => set_selected_amount(v)}
+        />
+
+        <PieChartInput
+          primaryColor="green"
+          secondaryColor="blue"
+          accentColor="black"
+          accentSize={3}
+          radius={70}
+          max={100}
+          value={selected_amount}
+          onChange={(v) => set_selected_amount(v)}
+        />
+
+        {show_stats && <PostGamePage start={10000} end={funds} day={day} />}
       </div>
-      {price && <p>Daily Opening Stock Price: ${price}</p>}
-
-      <SliderInput
-        value={selected_amount}
-        onChange={(e) => set_selected_amount(Number(e.target.value))}
-        max={100}
-        label="Select Amount to Buy/Sell: "
-      />
-      <div>
-        <SimButtons onButtonClick={handleButtonClick} />
+      <div style={{ width: '100%' }}>
+        {/* Line Chart */}
+        <StockLineChart stockHistory={chartHistory} />
       </div>
-
-      <TextInput
-        max={100}
-        value={selected_amount}
-        onChange={(v) => set_selected_amount(v)}
-      />
-
-      <PieChartInput
-        primaryColor="green"
-        secondaryColor="blue"
-        accentColor="black"
-        accentSize={3}
-        radius={70}
-        max={100}
-        value={selected_amount}
-        onChange={(v) => set_selected_amount(v)}
-      />
-
-      {show_stats && <PostGamePage start={10000} end={funds} day={day} />}
     </div>
   );
 }
