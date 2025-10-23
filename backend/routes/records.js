@@ -30,27 +30,39 @@ async function getPrice(ticker, start, end){
   return response_obj;
 }
 
+// helpers
+function rand(min, max){
+  return Math.round(Math.random() * (max - min) + min);
+}
+function genDate(){
+  let now = new Date();
+
+  let end = new Date(0);
+  end.setUTCFullYear(now.getUTCFullYear());
+  end.setUTCMonth(now.getUTCMonth());
+  end.setUTCDate(now.getUTCDate() - 30);
+
+  // polygon's free plan allows us to go back up to 2 years (https://polygon.io/pricing)
+  let start = new Date(0);
+  start.setUTCFullYear(now.getUTCFullYear() - 2);
+  start.setUTCMonth(now.getUTCMonth());
+  start.setUTCDate(now.getUTCDate());
+
+  let out = new Date(rand(start.getTime(), end.getTime()));
+  out.setUTCDate(out.getUTCDate() - out.getUTCDay() + rand(1, 5)); // an indirect way of setting utc day
+
+  return out;
+}
+function toDateStr(date){
+  return `${date.getUTCFullYear()}-${date.getUTCMonth().toString().padStart(2, "0")}-${date.getUTCDate().toString().padStart(2,"0")}`
+}
+
 // backend route to retrieve initial stock prices
 recordRoutes.post("/stock", async (req, res) => {
   balance = 10000.0;
-  let day_num = 0;
-  let date_string = ""; // gets passed to the front end for easy access
 
-  // loop until weekday is found
-  while (day_num == 0 || day_num == 6) {
-    let random_month = Math.floor(Math.random() * 12) + 1;
-    let month = String(random_month).padStart(2, "0");
-
-    let random_day = Math.floor(Math.random() * 28) + 1;
-    let day = String(random_day).padStart(2, "0");
-
-    let random_year = Math.floor(Math.random() * (2025 - 2024 + 1)) + 2024;
-    let year = String(random_year);
-
-    date_string = `${year}-${month}-${day}`;
-    let date_obj = new Date(date_string);
-    day_num = date_obj.getUTCDay(); // 0-6
-  }
+  let date = genDate();
+  let date_string = toDateStr(date);
 
   const { ticker } = req.body;
   console.log("ticker symbol: " + ticker + " || date string: " + date_string);
