@@ -26,7 +26,7 @@ async function getPrice(ticker, date){
   const response = await axios.get(url);
 
   const response_obj = {
-    data: response.data,
+    price: response?.data?.results?.at(0)?.o,
     date: start,
   };
 
@@ -84,10 +84,8 @@ recordRoutes.post("/stock", async (req, res) => {
   try {
     const response = await getPrice(ticker, date);
 
-    if (response.data.resultsCount > 0) {
-      price = response.data.results[0].o; // set price to the resulting opening price from api call
-      res.json(response);
-    }
+    price = response.price; // set price to the resulting opening price from api call
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error fetching data from Polygon" });
@@ -108,10 +106,9 @@ recordRoutes.post("/next", async (req, res) => {
   console.log("before api call /next");
   try {
     const response = await getPrice(ticker, date_obj);
-    if (response.data.resultsCount > 0) {
-      price = response.data.results[0].o; // price set to resulting opening price from api call
-      res.json(response);
-    }
+
+    price = response.price; // price set to resulting opening price from api call
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error fetching data from Polygon" });

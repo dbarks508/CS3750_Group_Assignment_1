@@ -43,7 +43,7 @@ function Game() {
       console.log(data);
       navigate("/simulation", {
         state: {
-          stock_data: data.data,
+          rawPrice: data.price,
           date: data.date,
           ticker_symbol: formattedTicker,
           stock_name: formattedStockName

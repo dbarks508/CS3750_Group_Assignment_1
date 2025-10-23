@@ -20,15 +20,15 @@ function Simulation() {
   const [stockName, setStockName] = useState("");
 
   const location = useLocation();
-  const { stock_data, date, ticker_symbol, stock_name } = location.state;
+  const { rawPrice, date, ticker_symbol, stock_name } = location.state;
 
   useEffect(() => {
     // Always set ticker and stock name
     set_ticker(ticker_symbol);
     setStockName(stock_name);
 
-    if (stock_data?.results?.length > 0) {
-      set_price(stock_data.results[0].o);
+    if (rawPrice) {
+      set_price(rawPrice);
       set_date_string(date);
       set_ticker(ticker_symbol);
       console.log(
@@ -43,7 +43,7 @@ function Simulation() {
       let message = "00.00 (No opening stock price found.)";
       set_price(message);
     }
-  }, [stock_data, date, ticker_symbol, stock_name]);
+  }, [rawPrice, date, ticker_symbol, stock_name]);
 
   // button logic ----------
 
@@ -71,9 +71,9 @@ function Simulation() {
       // handle response
       const data = await response.json();
       
-      set_price(data.data.results[0].o); // sets opening price, could also access closing at .c
+      set_price(data.price); // sets opening price, could also access closing at .c
       set_date_string(data.date);
-      console.log("price for next day set to: " + data.data.results[0].o);
+      console.log("price for next day set to: " + data.price);
       console.log("date advaced to to: " + data.date);
       
       set_day(day + 1); // increment the day
