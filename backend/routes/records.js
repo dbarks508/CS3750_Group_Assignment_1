@@ -55,7 +55,7 @@ function genDate(){
   return out;
 }
 function toDateStr(date){
-  return `${date.getUTCFullYear()}-${date.getUTCMonth().toString().padStart(2, "0")}-${date.getUTCDate().toString().padStart(2,"0")}`
+  return `${date.getUTCFullYear()}-${date.getUTCMonth().toString().padStart(2, "0")}-${(date.getUTCDate() + 1).toString().padStart(2,"0")}`
 }
 
 // backend route to retrieve initial stock prices
