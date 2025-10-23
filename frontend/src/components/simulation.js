@@ -8,6 +8,8 @@ import PieChartInput from "./pieChartInput";
 import PostGamePage from "./postGamePage";
 import StockLineChart from "./stockLineChart";
 
+import './simulationStyles.css';
+
 function Simulation() {
   const [funds, set_funds] = useState(10000);
   const [shares_owned, set_shares_owned] = useState(0);

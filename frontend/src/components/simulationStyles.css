@@ -1,0 +1,14 @@
+input{
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #000; /* remove if it looks off */
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+p{
+    margin: 5px 0;
+    border: 2px solid #000; /* trying to give a box look like on game stat screens */
+    padding: 8px;
+    border-radius: 4px;
+}
